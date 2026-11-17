@@ -98,6 +98,32 @@ describe('generateTeamSelection', () => {
     }
   });
 
+  it('ubica a un jugador en su posición secundaria si rinde mejor ahí que en la principal', () => {
+    const config = defaultChampionshipConfig();
+    config.numberOfTeams = 1;
+    config.formation = { arquero: 0, defensa: 1, mediocampista: 1, delantero: 0 };
+    config.teamDefaults = [config.teamDefaults[0]];
+
+    // X declara defensa como principal pero es mucho mejor mediocampista.
+    const x = makePlayer({ primaryPosition: 'defensa', secondaryPositions: ['mediocampista'] });
+    x.positionLevels.defensa = 5;
+    x.positionLevels.mediocampista = 1;
+    // Y solo juega de defensa, y ahí es excelente.
+    const y = makePlayer({ primaryPosition: 'defensa' });
+    y.positionLevels.defensa = 1;
+    // Z solo juega de mediocampista, y ahí es malo.
+    const z = makePlayer({ primaryPosition: 'mediocampista' });
+    z.positionLevels.mediocampista = 6;
+
+    const result = generateTeamSelection([x, y, z], config, { attempts: 1, iterationsPerAttempt: 50 });
+    if ('ok' in result) throw new Error(`No debería fallar: ${result.message}`);
+
+    const assignedByPosition = Object.fromEntries(result.teams[0].players.map((p) => [p.assignedPosition, p.player.id]));
+    expect(assignedByPosition.mediocampista).toBe(x.id);
+    expect(assignedByPosition.defensa).toBe(y.id);
+    expect(result.unassignedPlayers.map((p) => p.id)).toEqual([z.id]);
+  });
+
   it('devuelve un error de validación claro si faltan jugadores para cubrir las posiciones', () => {
     const config = defaultChampionshipConfig();
     const players = Array.from({ length: 3 }, () => makePlayer({ primaryPosition: 'arquero' }));

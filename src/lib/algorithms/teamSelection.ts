@@ -14,10 +14,14 @@ interface PositionPools {
 
 /**
  * Resuelve, mediante flujo de costo mínimo (emparejamiento bipartito jugador-posición),
- * qué jugadores cubren cada posición. Prioriza la posición principal (costo 0) sobre una
- * secundaria (costo 1), y confirma que existe una asignación simultánea válida: un conteo
- * posición-por-posición puede alcanzar, pero el solapamiento de posiciones secundarias
- * puede impedir cubrir todas las plazas a la vez; este algoritmo lo detecta con certeza.
+ * qué jugadores cubren cada posición. Entre las posiciones habilitadas de cada jugador
+ * (principal o secundaria), prioriza aquella donde está mejor calificado según
+ * `positionLevels` (costo = nivel - 1, así nivel 1 "Excelente" es gratis y nivel 6
+ * "Principiante" es el más caro) — no la que haya declarado como "principal" si en otra
+ * habilitada rindió mejor en la votación. También confirma que existe una asignación
+ * simultánea válida: un conteo posición-por-posición puede alcanzar, pero el solapamiento
+ * de posiciones secundarias puede impedir cubrir todas las plazas a la vez; este algoritmo
+ * lo detecta con certeza.
  */
 function solvePositionPools(players: Player[], config: ChampionshipConfig): PositionPools | ValidationError {
   const quick = checkFeasibility(players, config.formation, config.numberOfTeams);
@@ -38,7 +42,7 @@ function solvePositionPools(players: Player[], config: ChampionshipConfig): Posi
   available.forEach((player, i) => {
     for (const position of POSITIONS) {
       if (!isEligible(player, position)) continue;
-      const cost = player.primaryPosition === position ? 0 : 1;
+      const cost = player.positionLevels[position] - 1;
       mcmf.addEdge(i + 1, positionIndex[position], 1, cost);
     }
   });
