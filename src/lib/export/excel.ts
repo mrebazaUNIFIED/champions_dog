@@ -1,4 +1,13 @@
-import { POSITION_LABELS, type Player, type PlayerInput, type Position, type SelectionResult, type SkillLevel } from '../../types';
+import {
+  defaultPositionLevels,
+  POSITION_LABELS,
+  POSITIONS,
+  type Player,
+  type PlayerInput,
+  type Position,
+  type SelectionResult,
+  type SkillLevel,
+} from '../../types';
 
 // xlsx y file-saver se cargan solo cuando realmente se exporta/importa algo,
 // para no sumarlas al bundle inicial de las páginas que usan este módulo.
@@ -15,6 +24,13 @@ const POSITION_BY_LABEL: Record<string, Position> = {
   defensa: 'defensa',
   mediocampista: 'mediocampista',
   delantero: 'delantero',
+};
+
+const LEVEL_COLUMN: Record<Position, string> = {
+  arquero: 'Nivel Arquero',
+  defensa: 'Nivel Defensa',
+  mediocampista: 'Nivel Medio',
+  delantero: 'Nivel Delantero',
 };
 
 function parsePosition(value: unknown): Position | null {
@@ -46,13 +62,16 @@ export async function exportPlayersToExcel(players: Player[], filename = 'jugado
     'Nombre completo': p.fullName,
     'Posición principal': POSITION_LABELS[p.primaryPosition],
     'Posiciones secundarias': p.secondaryPositions.map((pos) => POSITION_LABELS[pos]).join(', '),
-    Nivel: p.skillLevel,
+    [LEVEL_COLUMN.arquero]: p.positionLevels.arquero,
+    [LEVEL_COLUMN.defensa]: p.positionLevels.defensa,
+    [LEVEL_COLUMN.mediocampista]: p.positionLevels.mediocampista,
+    [LEVEL_COLUMN.delantero]: p.positionLevels.delantero,
     Disponible: p.available ? 'Sí' : 'No',
     Observaciones: p.notes ?? '',
   }));
 
   const sheet = XLSX.utils.json_to_sheet(rows);
-  sheet['!cols'] = [{ wch: 28 }, { wch: 18 }, { wch: 26 }, { wch: 8 }, { wch: 12 }, { wch: 30 }];
+  sheet['!cols'] = [{ wch: 28 }, { wch: 18 }, { wch: 26 }, { wch: 10 }, { wch: 10 }, { wch: 10 }, { wch: 10 }, { wch: 12 }, { wch: 30 }];
   const workbook = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(workbook, sheet, 'Jugadores');
   const buffer = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' });
@@ -67,7 +86,10 @@ export async function downloadPlayersTemplate() {
       'Nombre completo': 'Juan Pérez',
       'Posición principal': 'Defensa',
       'Posiciones secundarias': 'Mediocampista',
-      Nivel: 3,
+      [LEVEL_COLUMN.arquero]: 6,
+      [LEVEL_COLUMN.defensa]: 3,
+      [LEVEL_COLUMN.mediocampista]: 4,
+      [LEVEL_COLUMN.delantero]: 5,
       Disponible: 'Sí',
       Observaciones: '',
     },
@@ -107,11 +129,20 @@ export async function parsePlayersExcel(file: File): Promise<ImportResult> {
       return;
     }
 
-    const skillLevel = parseLevel(row['Nivel']);
-    if (!skillLevel) {
-      errors.push(`Fila ${line} (${fullName}): nivel inválido (debe ser 1 a 6).`);
-      return;
+    const positionLevels = defaultPositionLevels(3);
+    let levelsOk = true;
+    for (const position of POSITIONS) {
+      const raw = row[LEVEL_COLUMN[position]];
+      if (raw === '' || raw === undefined || raw === null) continue;
+      const level = parseLevel(raw);
+      if (!level) {
+        errors.push(`Fila ${line} (${fullName}): ${LEVEL_COLUMN[position]} inválido (debe ser 1 a 6).`);
+        levelsOk = false;
+        break;
+      }
+      positionLevels[position] = level;
     }
+    if (!levelsOk) return;
 
     const secondaryRaw = String(row['Posiciones secundarias'] ?? '');
     const secondaryPositions = secondaryRaw
@@ -123,7 +154,7 @@ export async function parsePlayersExcel(file: File): Promise<ImportResult> {
       fullName,
       primaryPosition,
       secondaryPositions,
-      skillLevel,
+      positionLevels,
       available: parseBoolean(row['Disponible']),
       notes: String(row['Observaciones'] ?? '').trim() || undefined,
     });
@@ -155,7 +186,7 @@ export async function exportSelectionToExcel(result: SelectionResult, filename =
     const rows = team.players.map((p) => ({
       Jugador: p.player.fullName,
       Posición: POSITION_LABELS[p.assignedPosition],
-      Nivel: p.player.skillLevel,
+      Nivel: p.player.positionLevels[p.assignedPosition],
       Puntos: p.score,
     }));
     const sheet = XLSX.utils.json_to_sheet(rows);

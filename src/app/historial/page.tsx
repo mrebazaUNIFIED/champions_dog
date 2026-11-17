@@ -66,7 +66,7 @@ export default function HistorialPage() {
                           {team.players.map((p) => (
                             <li key={p.player.id} className="flex justify-between">
                               <span>{p.player.fullName}</span>
-                              <span className="text-ink-400">{p.assignedPosition} · N{p.player.skillLevel}</span>
+                              <span className="text-ink-400">{p.assignedPosition} · N{p.player.positionLevels[p.assignedPosition]}</span>
                             </li>
                           ))}
                         </ul>

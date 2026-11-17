@@ -104,7 +104,7 @@ export default function SeleccionPage() {
       setSelected({ teamId, playerId });
       return;
     }
-    const result = swapPlayers(selected.teamId, selected.playerId, teamId, playerId);
+    const result = swapPlayers(selected.teamId, selected.playerId, teamId, playerId, config.scoring);
     if (!result.ok) setSwapError(result.message ?? 'No se pudo intercambiar.');
     setSelected(null);
   }

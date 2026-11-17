@@ -10,13 +10,13 @@ import {
   FiTrash2,
   FiUpload,
 } from 'react-icons/fi';
-import { PositionBadge, SkillBadge } from '../../components/common/Badges';
+import { PositionBadge, PositionLevelsBadge } from '../../components/common/Badges';
 import { Button } from '../../components/common/Button';
 import { Card } from '../../components/common/Card';
 import { PlayerFormModal } from '../../components/players/PlayerFormModal';
 import { downloadPlayersTemplate, exportPlayersToExcel, parsePlayersExcel } from '../../lib/export/excel';
 import { usePlayersStore } from '../../store/usePlayersStore';
-import { POSITIONS, POSITION_LABELS, SKILL_LEVELS, type Player, type Position, type SkillLevel } from '../../types';
+import { overallLevel, POSITIONS, POSITION_LABELS, SKILL_LEVELS, type Player, type Position, type SkillLevel } from '../../types';
 
 export default function JugadoresPage() {
   const players = usePlayersStore((s) => s.players);
@@ -38,7 +38,7 @@ export default function JugadoresPage() {
       if (search && !p.fullName.toLowerCase().includes(search.toLowerCase())) return false;
       if (positionFilter !== 'all' && p.primaryPosition !== positionFilter && !p.secondaryPositions.includes(positionFilter))
         return false;
-      if (levelFilter !== 'all' && p.skillLevel !== levelFilter) return false;
+      if (levelFilter !== 'all' && overallLevel(p) !== levelFilter) return false;
       return true;
     });
   }, [players, search, positionFilter, levelFilter]);
@@ -123,6 +123,7 @@ export default function JugadoresPage() {
           value={levelFilter}
           onChange={(e) => setLevelFilter(e.target.value === 'all' ? 'all' : (Number(e.target.value) as SkillLevel))}
           className="rounded-lg border border-surface-300 bg-surface-0 px-3 py-2 text-sm text-ink-900 outline-none focus:border-brand-500"
+          title="Filtra por el nivel en la posición principal"
         >
           <option value="all">Todos los niveles</option>
           {SKILL_LEVELS.map((l) => (
@@ -160,7 +161,7 @@ export default function JugadoresPage() {
                   </div>
                 </td>
                 <td className="px-4 py-3">
-                  <SkillBadge level={p.skillLevel} />
+                  <PositionLevelsBadge positionLevels={p.positionLevels} />
                 </td>
                 <td className="px-4 py-3">
                   <span

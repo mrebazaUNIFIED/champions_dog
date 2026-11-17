@@ -1,13 +1,13 @@
 import { create } from 'zustand';
 import { repository } from '../lib/data';
-import type { PlayerVotes, SkillLevel, VoterId } from '../types';
+import type { PlayerVotes, Position, SkillLevel, VoterId } from '../types';
 
 interface VotesState {
   votes: PlayerVotes[];
   loading: boolean;
   loaded: boolean;
   load: () => Promise<void>;
-  setVote: (playerId: string, voterId: VoterId, level: SkillLevel | null) => Promise<void>;
+  setVote: (playerId: string, voterId: VoterId, position: Position, level: SkillLevel | null) => Promise<void>;
 }
 
 export const useVotesStore = create<VotesState>((set, get) => ({
@@ -21,12 +21,13 @@ export const useVotesStore = create<VotesState>((set, get) => ({
     set({ votes, loading: false, loaded: true });
   },
 
-  setVote: async (playerId, voterId, level) => {
+  setVote: async (playerId, voterId, position, level) => {
     const existing = get().votes.find((v) => v.playerId === playerId);
-    const nextVotes = { ...existing?.votes };
-    if (level === null) delete nextVotes[voterId];
-    else nextVotes[voterId] = level;
+    const voterVotes = { ...existing?.votes[voterId] };
+    if (level === null) delete voterVotes[position];
+    else voterVotes[position] = level;
 
+    const nextVotes = { ...existing?.votes, [voterId]: voterVotes };
     const updated: PlayerVotes = { playerId, votes: nextVotes, updatedAt: new Date().toISOString() };
     await repository.upsertPlayerVotes(updated);
     set({

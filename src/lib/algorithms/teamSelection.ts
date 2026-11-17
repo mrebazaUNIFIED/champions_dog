@@ -99,7 +99,7 @@ function draftDistribute(
   for (const position of POSITIONS) {
     const rounds = config.formation[position];
     const ranked = shuffle(pools[position], rng).sort(
-      (a, b) => config.scoring[b.skillLevel] - config.scoring[a.skillLevel],
+      (a, b) => config.scoring[b.positionLevels[position]] - config.scoring[a.positionLevels[position]],
     );
 
     let cursor = 0;
@@ -110,7 +110,7 @@ function draftDistribute(
         teams[teamIdx].players.push({
           player,
           assignedPosition: position,
-          score: config.scoring[player.skillLevel],
+          score: config.scoring[player.positionLevels[position]],
         });
       }
     }
@@ -130,7 +130,12 @@ function cloneTeams(teams: Team[]): Team[] {
  * Un intercambio solo se realiza si ambos jugadores quedan habilitados para la posición
  * que ocuparían (igual o mediante posición secundaria), así nunca se rompe la formación.
  */
-function localSearchOptimize(initialTeams: Team[], iterations: number, rng: () => number): Team[] {
+function localSearchOptimize(
+  initialTeams: Team[],
+  config: ChampionshipConfig,
+  iterations: number,
+  rng: () => number,
+): Team[] {
   let current = cloneTeams(initialTeams);
   let currentObjective = evaluateBalance(current);
   let best = cloneTeams(current);
@@ -159,8 +164,16 @@ function localSearchOptimize(initialTeams: Team[], iterations: number, rng: () =
     const newPosForB = assignedA.assignedPosition;
     if (!isEligible(assignedA.player, newPosForA) || !isEligible(assignedB.player, newPosForB)) continue;
 
-    const swappedA = { player: assignedB.player, assignedPosition: newPosForA, score: assignedB.score };
-    const swappedB = { player: assignedA.player, assignedPosition: newPosForB, score: assignedA.score };
+    const swappedA = {
+      player: assignedB.player,
+      assignedPosition: newPosForA,
+      score: config.scoring[assignedB.player.positionLevels[newPosForA]],
+    };
+    const swappedB = {
+      player: assignedA.player,
+      assignedPosition: newPosForB,
+      score: config.scoring[assignedA.player.positionLevels[newPosForB]],
+    };
 
     const trial = cloneTeams(current);
     trial[ta].players[ia] = swappedA;
@@ -223,7 +236,7 @@ export function generateTeamSelection(
   for (let attempt = 0; attempt < attempts; attempt++) {
     const rng = createRng(seed + attempt * 7919);
     const drafted = draftDistribute(positionPools, config, rng);
-    const optimized = localSearchOptimize(drafted, iterationsPerAttempt, rng);
+    const optimized = localSearchOptimize(drafted, config, iterationsPerAttempt, rng);
     const objective = evaluateBalance(optimized);
     if (objective < bestObjective) {
       bestObjective = objective;

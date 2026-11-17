@@ -6,7 +6,17 @@ import { Button } from '../common/Button';
 import { Modal } from '../common/Modal';
 import { isSupabaseConfigured } from '../../lib/supabase/client';
 import { uploadPlayerPhoto } from '../../lib/supabase/storage';
-import { POSITIONS, POSITION_LABELS, SKILL_LABELS, SKILL_LEVELS, type Player, type PlayerInput, type Position, type SkillLevel } from '../../types';
+import {
+  defaultPositionLevels,
+  POSITIONS,
+  POSITION_LABELS,
+  SKILL_LABELS,
+  SKILL_LEVELS,
+  type Player,
+  type PlayerInput,
+  type Position,
+  type SkillLevel,
+} from '../../types';
 
 interface Props {
   open: boolean;
@@ -19,7 +29,7 @@ const EMPTY: PlayerInput = {
   fullName: '',
   primaryPosition: 'defensa',
   secondaryPositions: [],
-  skillLevel: 3,
+  positionLevels: defaultPositionLevels(3),
   available: true,
   notes: '',
   photoUrl: undefined,
@@ -39,7 +49,7 @@ export function PlayerFormModal({ open, onClose, onSubmit, initial }: Props) {
               fullName: initial.fullName,
               primaryPosition: initial.primaryPosition,
               secondaryPositions: initial.secondaryPositions,
-              skillLevel: initial.skillLevel,
+              positionLevels: initial.positionLevels,
               available: initial.available,
               notes: initial.notes ?? '',
               photoUrl: initial.photoUrl,
@@ -130,34 +140,46 @@ export function PlayerFormModal({ open, onClose, onSubmit, initial }: Props) {
           />
         </div>
 
-        <div className="grid grid-cols-2 gap-4">
-          <div>
-            <label className="mb-1 block text-sm text-ink-500">Posición principal</label>
-            <select
-              value={form.primaryPosition}
-              onChange={(e) => setForm((f) => ({ ...f, primaryPosition: e.target.value as Position }))}
-              className="w-full rounded-lg border border-surface-300 bg-surface-0 px-3 py-2 text-ink-900 outline-none focus:border-brand-500"
-            >
-              {POSITIONS.map((p) => (
-                <option key={p} value={p}>
-                  {POSITION_LABELS[p]}
-                </option>
-              ))}
-            </select>
-          </div>
-          <div>
-            <label className="mb-1 block text-sm text-ink-500">Nivel de habilidad</label>
-            <select
-              value={form.skillLevel}
-              onChange={(e) => setForm((f) => ({ ...f, skillLevel: Number(e.target.value) as SkillLevel }))}
-              className="w-full rounded-lg border border-surface-300 bg-surface-0 px-3 py-2 text-ink-900 outline-none focus:border-brand-500"
-            >
-              {SKILL_LEVELS.map((lvl) => (
-                <option key={lvl} value={lvl}>
-                  {lvl} · {SKILL_LABELS[lvl]}
-                </option>
-              ))}
-            </select>
+        <div>
+          <label className="mb-1 block text-sm text-ink-500">Posición principal</label>
+          <select
+            value={form.primaryPosition}
+            onChange={(e) => setForm((f) => ({ ...f, primaryPosition: e.target.value as Position }))}
+            className="w-full rounded-lg border border-surface-300 bg-surface-0 px-3 py-2 text-ink-900 outline-none focus:border-brand-500"
+          >
+            {POSITIONS.map((p) => (
+              <option key={p} value={p}>
+                {POSITION_LABELS[p]}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        <div>
+          <span className="mb-1 block text-sm text-ink-500">Nivel por posición</span>
+          <p className="mb-2 text-xs text-ink-400">Qué tan bien juega en cada puesto, no solo en el suyo (1 Excelente a 6 Principiante).</p>
+          <div className="grid grid-cols-2 gap-3">
+            {POSITIONS.map((p) => (
+              <div key={p}>
+                <label className="mb-1 block text-xs text-ink-400">{POSITION_LABELS[p]}</label>
+                <select
+                  value={form.positionLevels[p]}
+                  onChange={(e) =>
+                    setForm((f) => ({
+                      ...f,
+                      positionLevels: { ...f.positionLevels, [p]: Number(e.target.value) as SkillLevel },
+                    }))
+                  }
+                  className="w-full rounded-lg border border-surface-300 bg-surface-0 px-3 py-2 text-sm text-ink-900 outline-none focus:border-brand-500"
+                >
+                  {SKILL_LEVELS.map((lvl) => (
+                    <option key={lvl} value={lvl}>
+                      {lvl} · {SKILL_LABELS[lvl]}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            ))}
           </div>
         </div>
 

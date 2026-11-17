@@ -51,12 +51,10 @@ export async function exportSelectionToPdf(result: SelectionResult, filename = '
     autoTable(doc, {
       startY: cursorY + 9,
       head: [['Jugador', 'Posición', 'Nivel', 'Puntos']],
-      body: team.players.map((p) => [
-        p.player.fullName,
-        POSITION_LABELS[p.assignedPosition],
-        `${p.player.skillLevel} · ${SKILL_LABELS[p.player.skillLevel]}`,
-        String(p.score),
-      ]),
+      body: team.players.map((p) => {
+        const level = p.player.positionLevels[p.assignedPosition];
+        return [p.player.fullName, POSITION_LABELS[p.assignedPosition], `${level} · ${SKILL_LABELS[level]}`, String(p.score)];
+      }),
       theme: 'striped',
       headStyles: { fillColor: hexToRgb(team.color) },
       styles: { fontSize: 8, cellPadding: 2 },

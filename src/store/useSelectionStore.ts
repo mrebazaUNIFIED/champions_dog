@@ -21,7 +21,13 @@ interface SelectionState {
   generate: (players: Player[], config: ChampionshipConfig, proposalCount?: number) => Promise<void>;
   chooseProposal: (index: number) => Promise<void>;
   discard: () => Promise<void>;
-  swapPlayers: (teamAId: string, playerIdA: string, teamBId: string, playerIdB: string) => { ok: boolean; message?: string };
+  swapPlayers: (
+    teamAId: string,
+    playerIdA: string,
+    teamBId: string,
+    playerIdB: string,
+    scoring: Record<SkillLevel, number>,
+  ) => { ok: boolean; message?: string };
   replaceWithBench: (
     teamId: string,
     outPlayerId: string,
@@ -71,7 +77,7 @@ export const useSelectionStore = create<SelectionState>((set, get) => ({
     set({ current: null, proposals: [] });
   },
 
-  swapPlayers: (teamAId, playerIdA, teamBId, playerIdB) => {
+  swapPlayers: (teamAId, playerIdA, teamBId, playerIdB, scoring) => {
     const { current } = get();
     if (!current) return { ok: false, message: 'No hay una selección activa.' };
 
@@ -96,8 +102,16 @@ export const useSelectionStore = create<SelectionState>((set, get) => ({
       return { ok: false, message: `${assignedB.player.fullName} no puede jugar de ${newPosForB}.` };
     }
 
-    teamA.players[idxA] = { player: assignedB.player, assignedPosition: newPosForA, score: assignedB.score };
-    teamB.players[idxB] = { player: assignedA.player, assignedPosition: newPosForB, score: assignedA.score };
+    teamA.players[idxA] = {
+      player: assignedB.player,
+      assignedPosition: newPosForA,
+      score: scoring[assignedB.player.positionLevels[newPosForA]],
+    };
+    teamB.players[idxB] = {
+      player: assignedA.player,
+      assignedPosition: newPosForB,
+      score: scoring[assignedA.player.positionLevels[newPosForB]],
+    };
 
     const updated = recomputeResult({ ...current, teams });
     void repository.saveCurrentSelection(updated);
@@ -125,7 +139,7 @@ export const useSelectionStore = create<SelectionState>((set, get) => ({
     }
 
     const outgoing = team.players[idx].player;
-    team.players[idx] = { player: bench, assignedPosition: slotPosition, score: scoring[bench.skillLevel] };
+    team.players[idx] = { player: bench, assignedPosition: slotPosition, score: scoring[bench.positionLevels[slotPosition]] };
 
     const unassignedPlayers = current.unassignedPlayers.filter((p) => p.id !== benchPlayerId).concat(outgoing);
 

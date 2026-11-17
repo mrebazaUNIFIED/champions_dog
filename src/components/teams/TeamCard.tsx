@@ -127,7 +127,7 @@ export function TeamCard({
                   <p className="truncate text-sm font-medium text-ink-900">{assigned.player.fullName}</p>
                   <div className="mt-0.5 flex flex-wrap gap-1">
                     <PositionBadge position={assigned.assignedPosition} />
-                    <SkillBadge level={assigned.player.skillLevel} />
+                    <SkillBadge level={assigned.player.positionLevels[assigned.assignedPosition]} />
                   </div>
                 </div>
               </button>

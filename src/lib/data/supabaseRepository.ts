@@ -8,7 +8,7 @@ interface PlayerRow {
   photo_url: string | null;
   primary_position: Position;
   secondary_positions: Position[];
-  skill_level: SkillLevel;
+  position_levels: Record<Position, SkillLevel>;
   available: boolean;
   notes: string | null;
   created_at: string;
@@ -22,7 +22,7 @@ function rowToPlayer(row: PlayerRow): Player {
     photoUrl: row.photo_url ?? undefined,
     primaryPosition: row.primary_position,
     secondaryPositions: row.secondary_positions ?? [],
-    skillLevel: row.skill_level,
+    positionLevels: row.position_levels,
     available: row.available,
     notes: row.notes ?? undefined,
     createdAt: row.created_at,
@@ -37,7 +37,7 @@ function playerToRow(player: Player): PlayerRow {
     photo_url: player.photoUrl ?? null,
     primary_position: player.primaryPosition,
     secondary_positions: player.secondaryPositions,
-    skill_level: player.skillLevel,
+    position_levels: player.positionLevels,
     available: player.available,
     notes: player.notes ?? null,
     created_at: player.createdAt,

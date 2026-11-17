@@ -16,20 +16,27 @@ import { Button } from '../../components/common/Button';
 import { Card } from '../../components/common/Card';
 import { usePlayersStore } from '../../store/usePlayersStore';
 import { useVotesStore } from '../../store/useVotesStore';
-import { SKILL_LABELS, SKILL_LEVELS, VOTERS, averageVote, type SkillLevel, type VoteMap, type VoterId } from '../../types';
+import {
+  averageVoteForPosition,
+  hasVotedAllPositions,
+  POSITION_LABELS,
+  POSITIONS,
+  SKILL_LEVELS,
+  VOTERS,
+  type Position,
+  type PositionVotes,
+  type SkillLevel,
+  type VoteMap,
+  type VoterId,
+} from '../../types';
 
 const LAST_VOTER_KEY = 'pdl.lastVoter';
 
-// Iniciales únicas para la tabla resumen: Marco y Marlon comparten las primeras 3 letras.
-const VOTER_SHORT: Record<VoterId, string> = {
-  marco: 'Mc',
-  luis: 'Lu',
-  andair: 'An',
-  edwin: 'Ed',
-  frank: 'Fr',
-  heder: 'He',
-  jenry: 'Je',
-  marlon: 'Ml',
+const POSITION_SHORT: Record<Position, string> = {
+  arquero: 'Arq',
+  defensa: 'Def',
+  mediocampista: 'Med',
+  delantero: 'Del',
 };
 
 const LEVEL_TEXT_COLORS: Record<SkillLevel, string> = {
@@ -73,7 +80,7 @@ export default function VotacionPage() {
   const [voterId, setVoterId] = useState<VoterId | null>(null);
   const [index, setIndex] = useState(0);
   const [showTable, setShowTable] = useState(false);
-  const [flash, setFlash] = useState<SkillLevel | null>(null);
+  const [draft, setDraft] = useState<PositionVotes>({});
 
   useEffect(() => {
     if (!playersLoaded) void loadPlayers();
@@ -97,29 +104,39 @@ export default function VotacionPage() {
 
   const fullyVotedCount = sortedPlayers.filter((p) => {
     const v = votesByPlayer.get(p.id) ?? {};
-    return VOTERS.every((voter) => typeof v[voter.id] === 'number');
+    return VOTERS.every((voter) => hasVotedAllPositions(v[voter.id]));
   }).length;
 
   const votedByMeCount = voterId
-    ? sortedPlayers.filter((p) => typeof (votesByPlayer.get(p.id) ?? {})[voterId] === 'number').length
+    ? sortedPlayers.filter((p) => hasVotedAllPositions((votesByPlayer.get(p.id) ?? {})[voterId])).length
     : 0;
 
-  async function castVote(playerId: string, voter: VoterId, level: SkillLevel | null) {
+  useEffect(() => {
+    if (!voterId) return;
+    const player = sortedPlayers[index];
+    if (!player) return;
+    setDraft({ ...(votesByPlayer.get(player.id)?.[voterId] ?? {}) });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [index, voterId]);
+
+  async function castVote(playerId: string, voter: VoterId, position: Position, level: SkillLevel) {
     const player = sortedPlayers.find((p) => p.id === playerId);
     if (!player) return;
-    const updatedVotes = { ...votesByPlayer.get(playerId) };
-    if (level === null) delete updatedVotes[voter];
-    else updatedVotes[voter] = level;
+    const existingVoterVotes = votesByPlayer.get(playerId)?.[voter] ?? {};
+    const updatedVoterVotes = { ...existingVoterVotes, [position]: level };
+    const updatedVotesForPlayer = { ...votesByPlayer.get(playerId), [voter]: updatedVoterVotes };
 
-    await setVote(playerId, voter, level);
-    const proposed = averageVote(updatedVotes);
-    if (proposed && proposed !== player.skillLevel) await updatePlayer(playerId, { skillLevel: proposed });
+    await setVote(playerId, voter, position, level);
+    const proposed = averageVoteForPosition(updatedVotesForPlayer, position);
+    if (proposed && proposed !== player.positionLevels[position]) {
+      await updatePlayer(playerId, { positionLevels: { ...player.positionLevels, [position]: proposed } });
+    }
   }
 
   function pickVoter(id: VoterId) {
     writeLastVoter(id);
     setVoterId(id);
-    const firstPending = sortedPlayers.findIndex((p) => typeof (votesByPlayer.get(p.id) ?? {})[id] !== 'number');
+    const firstPending = sortedPlayers.findIndex((p) => !hasVotedAllPositions((votesByPlayer.get(p.id) ?? {})[id]));
     setIndex(firstPending === -1 ? 0 : firstPending);
   }
 
@@ -129,16 +146,16 @@ export default function VotacionPage() {
     setIndex(0);
   }
 
-  function vote(level: SkillLevel) {
+  function vote(position: Position, level: SkillLevel) {
     if (!voterId) return;
     const player = sortedPlayers[index];
     if (!player) return;
-    void castVote(player.id, voterId, level);
-    setFlash(level);
-    setTimeout(() => {
-      setFlash(null);
-      setIndex((i) => Math.min(i + 1, sortedPlayers.length));
-    }, 180);
+    const next = { ...draft, [position]: level };
+    setDraft(next);
+    void castVote(player.id, voterId, position, level);
+    if (POSITIONS.every((p) => typeof next[p] === 'number')) {
+      setTimeout(() => setIndex((i) => Math.min(i + 1, sortedPlayers.length)), 250);
+    }
   }
 
   if (!playersLoaded || !votesLoaded) {
@@ -158,8 +175,9 @@ export default function VotacionPage() {
       <div>
         <h2 className="font-display text-2xl font-bold text-ink-900">Votación de niveles</h2>
         <p className="text-sm text-ink-500">
-          Cada votante elige su nombre y va calificando a los jugadores uno por uno (nivel 1 a 6). El nivel oficial de
-          cada jugador se actualiza solo, con el promedio de los votos recibidos hasta el momento.
+          Cada votante elige su nombre y califica a cada jugador en las 4 posiciones (1 Excelente a 6 Principiante), no
+          solo en la suya. El nivel oficial de cada jugador en cada posición se actualiza solo, con el promedio de los
+          votos recibidos hasta el momento.
         </p>
       </div>
 
@@ -168,7 +186,7 @@ export default function VotacionPage() {
           <p className="mb-4 text-sm font-medium text-ink-700">¿Quién sos?</p>
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
             {VOTERS.map((voter) => {
-              const count = sortedPlayers.filter((p) => typeof (votesByPlayer.get(p.id) ?? {})[voter.id] === 'number').length;
+              const count = sortedPlayers.filter((p) => hasVotedAllPositions((votesByPlayer.get(p.id) ?? {})[voter.id])).length;
               return (
                 <button
                   key={voter.id}
@@ -229,25 +247,32 @@ export default function VotacionPage() {
           </div>
 
           <p className="font-display text-2xl font-bold text-ink-900">{sortedPlayers[index].fullName}</p>
+          <p className="-mt-3 text-[11px] text-ink-400">1 Excelente · 2 Muy bueno · 3 Bueno · 4 Regular · 5 Flojo · 6 Principiante</p>
 
-          <div className="grid w-full grid-cols-2 gap-2.5 sm:grid-cols-3">
-            {SKILL_LEVELS.map((level) => {
-              const currentVote = voterId ? (votesByPlayer.get(sortedPlayers[index].id) ?? {})[voterId] : undefined;
-              const active = flash === level || currentVote === level;
-              return (
-                <button
-                  key={level}
-                  onClick={() => vote(level)}
-                  className={`rounded-xl border px-3 py-4 text-sm font-semibold transition ${
-                    active
-                      ? 'border-brand-500 bg-brand-500 text-white shadow-sm shadow-brand-500/30'
-                      : 'border-surface-300 bg-surface-0 text-ink-900 hover:border-brand-400'
-                  }`}
-                >
-                  {level} · {SKILL_LABELS[level]}
-                </button>
-              );
-            })}
+          <div className="w-full space-y-3">
+            {POSITIONS.map((position) => (
+              <div key={position}>
+                <p className="mb-1 text-left text-xs font-medium text-ink-500">{POSITION_LABELS[position]}</p>
+                <div className="grid grid-cols-6 gap-1.5">
+                  {SKILL_LEVELS.map((level) => {
+                    const active = draft[position] === level;
+                    return (
+                      <button
+                        key={level}
+                        onClick={() => vote(position, level)}
+                        className={`rounded-lg border py-2.5 text-sm font-semibold transition ${
+                          active
+                            ? 'border-brand-500 bg-brand-500 text-white shadow-sm shadow-brand-500/30'
+                            : 'border-surface-300 bg-surface-0 text-ink-900 hover:border-brand-400'
+                        }`}
+                      >
+                        {level}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            ))}
           </div>
 
           <div className="flex w-full items-center justify-between pt-2">
@@ -265,7 +290,7 @@ export default function VotacionPage() {
         <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-center gap-2 rounded-lg border border-surface-200 bg-surface-0 px-3 py-2 text-sm text-ink-700">
             <FiUsers className="text-brand-600" />
-            {fullyVotedCount} de {sortedPlayers.length} jugadores con los 8 votos
+            {fullyVotedCount} de {sortedPlayers.length} jugadores con los 8 votos completos
           </div>
           <Button variant="secondary" onClick={() => setShowTable((s) => !s)}>
             {showTable ? <FiEyeOff /> : <FiEye />} {showTable ? 'Ocultar resumen' : 'Ver resumen de todos'}
@@ -273,60 +298,47 @@ export default function VotacionPage() {
         </div>
 
         {showTable && (
-          <div className="space-y-1.5">
-            <p className="text-xs text-ink-400 sm:hidden">Deslizá hacia la derecha para ver a todos los votantes →</p>
-            <Card className="overflow-x-auto p-0">
-              <table className="w-full table-fixed text-sm">
-                <colgroup>
-                  <col className="w-24 sm:w-40" />
-                  {VOTERS.map((voter) => (
-                    <col key={voter.id} className="w-9" />
+          <Card className="overflow-x-auto p-0">
+            <table className="w-full table-fixed text-sm">
+              <colgroup>
+                <col className="w-24 sm:w-40" />
+                {POSITIONS.map((position) => (
+                  <col key={position} className="w-14" />
+                ))}
+                <col className="w-16" />
+              </colgroup>
+              <thead>
+                <tr className="border-b border-surface-200 text-left text-xs text-ink-400">
+                  <th className="sticky left-0 z-10 bg-surface-0 px-3 py-3">Jugador</th>
+                  {POSITIONS.map((position) => (
+                    <th key={position} className="px-1 py-3 text-center font-medium" title={POSITION_LABELS[position]}>
+                      {POSITION_SHORT[position]}
+                    </th>
                   ))}
-                  <col className="w-20" />
-                </colgroup>
-                <thead>
-                  <tr className="border-b border-surface-200 text-left text-xs text-ink-400">
-                    <th className="sticky left-0 z-10 bg-surface-0 px-3 py-3">Jugador</th>
-                    {VOTERS.map((voter) => (
-                      <th key={voter.id} className="px-1 py-3 text-center font-medium" title={voter.name}>
-                        {VOTER_SHORT[voter.id]}
-                      </th>
-                    ))}
-                    <th className="px-2 py-3 text-center">Nivel</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {sortedPlayers.map((player) => {
-                    const playerVotes = votesByPlayer.get(player.id) ?? {};
-                    return (
-                      <tr key={player.id} className="border-b border-surface-200 last:border-0 hover:bg-surface-50">
-                        <td className="sticky left-0 z-10 bg-surface-0 px-3 py-2 font-medium text-ink-900">{player.fullName}</td>
-                        {VOTERS.map((voter) => {
-                          const v = playerVotes[voter.id];
-                          return (
-                            <td key={voter.id} className="px-1 py-2 text-center text-xs">
-                              {v ? (
-                                <span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-surface-100 font-semibold text-ink-700">
-                                  {v}
-                                </span>
-                              ) : (
-                                <span className="text-surface-300">–</span>
-                              )}
-                            </td>
-                          );
-                        })}
-                        <td className="px-2 py-2 text-center">
-                          <span className={`text-xs font-semibold whitespace-nowrap ${LEVEL_TEXT_COLORS[player.skillLevel]}`}>
-                            Nivel {player.skillLevel}
+                  <th className="px-2 py-3 text-center">Votos</th>
+                </tr>
+              </thead>
+              <tbody>
+                {sortedPlayers.map((player) => {
+                  const playerVotes = votesByPlayer.get(player.id) ?? {};
+                  const completedVoters = VOTERS.filter((voter) => hasVotedAllPositions(playerVotes[voter.id])).length;
+                  return (
+                    <tr key={player.id} className="border-b border-surface-200 last:border-0 hover:bg-surface-50">
+                      <td className="sticky left-0 z-10 bg-surface-0 px-3 py-2 font-medium text-ink-900">{player.fullName}</td>
+                      {POSITIONS.map((position) => (
+                        <td key={position} className="px-1 py-2 text-center">
+                          <span className={`text-xs font-semibold ${LEVEL_TEXT_COLORS[player.positionLevels[position]]}`}>
+                            {player.positionLevels[position]}
                           </span>
                         </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </Card>
-          </div>
+                      ))}
+                      <td className="px-2 py-2 text-center text-xs text-ink-500">{completedVoters}/8</td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </Card>
         )}
       </div>
     </div>

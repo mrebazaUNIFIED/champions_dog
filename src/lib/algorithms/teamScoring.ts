@@ -11,7 +11,7 @@ export function computeTeamStats(team: Team): TeamStats {
 
   for (const assigned of team.players) {
     positionCounts[assigned.assignedPosition] += 1;
-    levelDistribution[assigned.player.skillLevel] += 1;
+    levelDistribution[assigned.player.positionLevels[assigned.assignedPosition]] += 1;
     totalScore += assigned.score;
   }
 

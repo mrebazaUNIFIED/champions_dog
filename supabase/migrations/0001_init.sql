@@ -7,7 +7,7 @@ create table if not exists players (
   photo_url text,
   primary_position text not null check (primary_position in ('arquero','defensa','mediocampista','delantero')),
   secondary_positions text[] not null default '{}',
-  skill_level int not null check (skill_level between 1 and 6),
+  position_levels jsonb not null default '{"arquero":3,"defensa":3,"mediocampista":3,"delantero":3}'::jsonb,
   available boolean not null default true,
   notes text,
   created_at timestamptz not null default now(),

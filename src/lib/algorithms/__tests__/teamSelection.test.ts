@@ -1,22 +1,23 @@
 import { describe, expect, it } from 'vitest';
 import { defaultChampionshipConfig } from '../../../types/config';
-import type { Player, Position, SkillLevel } from '../../../types';
+import { defaultPositionLevels, type Player, type Position, type SkillLevel } from '../../../types';
 import { generateProposals, generateTeamSelection } from '../teamSelection';
 import { isEligible } from '../teamValidation';
 
 let counter = 0;
-function makePlayer(overrides: Partial<Player> & { primaryPosition: Position }): Player {
+function makePlayer(overrides: Partial<Omit<Player, 'positionLevels'>> & { primaryPosition: Position; level?: SkillLevel }): Player {
   counter += 1;
   const now = new Date().toISOString();
+  const { level = 3, ...rest } = overrides;
   return {
     id: `p-${counter}`,
     fullName: `Jugador ${counter}`,
     secondaryPositions: [],
-    skillLevel: 3,
+    positionLevels: defaultPositionLevels(level),
     available: true,
     createdAt: now,
     updatedAt: now,
-    ...overrides,
+    ...rest,
   };
 }
 
@@ -26,7 +27,7 @@ function buildExactPool(): Player[] {
   const counts: Record<Position, number> = { arquero: 6, defensa: 12, mediocampista: 6, delantero: 12 };
   (Object.keys(counts) as Position[]).forEach((position) => {
     for (let i = 0; i < counts[position]; i++) {
-      pool.push(makePlayer({ primaryPosition: position, skillLevel: levels[i % levels.length] }));
+      pool.push(makePlayer({ primaryPosition: position, level: levels[i % levels.length] }));
     }
   });
   return pool;

@@ -1,4 +1,11 @@
-import { POSITION_LABELS, SKILL_LABELS, type Position, type SkillLevel } from '../../types';
+import { POSITION_LABELS, POSITIONS, SKILL_LABELS, type Position, type SkillLevel } from '../../types';
+
+const POSITION_SHORT: Record<Position, string> = {
+  arquero: 'ARQ',
+  defensa: 'DEF',
+  mediocampista: 'MED',
+  delantero: 'DEL',
+};
 
 const POSITION_COLORS: Record<Position, string> = {
   arquero: 'bg-gray-100 text-gray-700 border-gray-300',
@@ -29,5 +36,27 @@ export function SkillBadge({ level, className = '' }: { level: SkillLevel; class
     <span className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-medium ${SKILL_COLORS[level]} ${className}`}>
       Nivel {level} · {SKILL_LABELS[level]}
     </span>
+  );
+}
+
+export function PositionLevelsBadge({
+  positionLevels,
+  className = '',
+}: {
+  positionLevels: Record<Position, SkillLevel>;
+  className?: string;
+}) {
+  return (
+    <div className={`flex flex-wrap gap-1 ${className}`}>
+      {POSITIONS.map((position) => (
+        <span
+          key={position}
+          title={POSITION_LABELS[position]}
+          className={`inline-flex items-center gap-1 rounded-md border px-1.5 py-0.5 text-[10px] font-semibold ${SKILL_COLORS[positionLevels[position]]}`}
+        >
+          {POSITION_SHORT[position]} {positionLevels[position]}
+        </span>
+      ))}
+    </div>
   );
 }
