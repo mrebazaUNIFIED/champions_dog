@@ -10,13 +10,22 @@ import {
   FiTrash2,
   FiUpload,
 } from 'react-icons/fi';
-import { PositionBadge, PositionLevelsBadge } from '../../components/common/Badges';
+import { PositionBadge, PositionLevelsBadge, SkillBadge } from '../../components/common/Badges';
 import { Button } from '../../components/common/Button';
-import { Card } from '../../components/common/Card';
+import { Card, CardTitle } from '../../components/common/Card';
 import { PlayerFormModal } from '../../components/players/PlayerFormModal';
 import { downloadPlayersTemplate, exportPlayersToExcel, parsePlayersExcel } from '../../lib/export/excel';
 import { usePlayersStore } from '../../store/usePlayersStore';
-import { overallLevel, POSITIONS, POSITION_LABELS, SKILL_LEVELS, type Player, type Position, type SkillLevel } from '../../types';
+import {
+  generalLevel,
+  overallLevel,
+  POSITIONS,
+  POSITION_LABELS,
+  SKILL_LEVELS,
+  type Player,
+  type Position,
+  type SkillLevel,
+} from '../../types';
 
 export default function JugadoresPage() {
   const players = usePlayersStore((s) => s.players);
@@ -32,6 +41,13 @@ export default function JugadoresPage() {
   const [editing, setEditing] = useState<Player | null>(null);
   const [importFeedback, setImportFeedback] = useState<{ added: number; errors: string[] } | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
+
+  const levelSummary = useMemo(() => {
+    const groups = new Map<SkillLevel, Player[]>();
+    for (const level of SKILL_LEVELS) groups.set(level, []);
+    for (const p of players) groups.get(generalLevel(p))?.push(p);
+    return groups;
+  }, [players]);
 
   const filtered = useMemo(() => {
     return players.filter((p) => {
@@ -80,6 +96,40 @@ export default function JugadoresPage() {
           </Button>
         </div>
       </div>
+
+      <Card className="overflow-x-auto p-0">
+        <div className="p-5 pb-0">
+          <CardTitle>Resumen general de niveles</CardTitle>
+          <p className="mt-1 text-sm text-ink-500">
+            El nivel general de cada jugador es el promedio de sus 4 niveles por posición.
+          </p>
+        </div>
+        <table className="w-full text-sm">
+          <thead>
+            <tr className="border-b border-surface-200 text-left text-xs uppercase tracking-wide text-ink-400">
+              <th className="px-4 py-3">Nivel</th>
+              <th className="px-4 py-3">Cantidad</th>
+              <th className="px-4 py-3">Jugadores</th>
+            </tr>
+          </thead>
+          <tbody>
+            {SKILL_LEVELS.map((level) => {
+              const group = levelSummary.get(level) ?? [];
+              return (
+                <tr key={level} className="border-b border-surface-200 last:border-0">
+                  <td className="px-4 py-3">
+                    <SkillBadge level={level} />
+                  </td>
+                  <td className="px-4 py-3 font-semibold text-ink-900">{group.length}</td>
+                  <td className="px-4 py-3 text-ink-500">
+                    {group.length > 0 ? group.map((p) => p.fullName).join(', ') : '—'}
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </Card>
 
       {importFeedback && (
         <Card className="border-green-200">
