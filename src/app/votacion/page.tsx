@@ -150,12 +150,8 @@ export default function VotacionPage() {
     if (!voterId) return;
     const player = sortedPlayers[index];
     if (!player) return;
-    const next = { ...draft, [position]: level };
-    setDraft(next);
+    setDraft((d) => ({ ...d, [position]: level }));
     void castVote(player.id, voterId, position, level);
-    if (POSITIONS.every((p) => typeof next[p] === 'number')) {
-      setTimeout(() => setIndex((i) => Math.min(i + 1, sortedPlayers.length)), 250);
-    }
   }
 
   if (!playersLoaded || !votesLoaded) {
@@ -279,8 +275,8 @@ export default function VotacionPage() {
             <Button variant="ghost" disabled={index === 0} onClick={() => setIndex((i) => Math.max(0, i - 1))}>
               <FiChevronLeft /> Anterior
             </Button>
-            <Button variant="ghost" onClick={() => setIndex((i) => Math.min(sortedPlayers.length, i + 1))}>
-              Saltar <FiChevronRight />
+            <Button onClick={() => setIndex((i) => Math.min(sortedPlayers.length, i + 1))}>
+              Siguiente <FiChevronRight />
             </Button>
           </div>
         </Card>
