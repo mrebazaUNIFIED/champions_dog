@@ -1,20 +1,14 @@
 import { create } from 'zustand';
 import { repository } from '../lib/data';
-import type { PlayerVotes, Position, SkillLevel, VoterId } from '../types';
+import type { Position, SkillLevel, VoteRecord, VoterId } from '../types';
 
 interface VotesState {
-  votes: PlayerVotes[];
+  votes: VoteRecord[];
   loading: boolean;
   loaded: boolean;
   load: () => Promise<void>;
-  setVote: (playerId: string, voterId: VoterId, position: Position, level: SkillLevel | null) => Promise<void>;
+  setVote: (playerId: string, voterId: VoterId, position: Position, level: SkillLevel) => Promise<void>;
 }
-
-// Varios votos se disparan en ráfaga (4 posiciones de un mismo jugador en segundos).
-// Sin esto, dos escrituras en vuelo leen el mismo estado viejo antes de que la primera
-// termine de guardar, y la segunda pisa a la primera perdiendo ese voto. Se serializan
-// todas las escrituras en una cola para que cada lectura vea siempre el resultado de la anterior.
-let writeQueue: Promise<void> = Promise.resolve();
 
 export const useVotesStore = create<VotesState>((set, get) => ({
   votes: [],
@@ -23,26 +17,21 @@ export const useVotesStore = create<VotesState>((set, get) => ({
 
   load: async () => {
     set({ loading: true });
-    const votes = await repository.listPlayerVotes();
+    const votes = await repository.listVotes();
     set({ votes, loading: false, loaded: true });
   },
 
-  setVote: (playerId, voterId, position, level) => {
-    const run = async () => {
-      const existing = get().votes.find((v) => v.playerId === playerId);
-      const voterVotes = { ...existing?.votes[voterId] };
-      if (level === null) delete voterVotes[position];
-      else voterVotes[position] = level;
-
-      const nextVotes = { ...existing?.votes, [voterId]: voterVotes };
-      const updated: PlayerVotes = { playerId, votes: nextVotes, updatedAt: new Date().toISOString() };
-      await repository.upsertPlayerVotes(updated);
-      set({
-        votes: existing ? get().votes.map((v) => (v.playerId === playerId ? updated : v)) : [...get().votes, updated],
-      });
-    };
-    const result = writeQueue.then(run);
-    writeQueue = result.catch(() => {});
-    return result;
+  // Cada voto es su propia fila en la base (ver repository.types.ts): un upsert acá nunca
+  // puede pisar el voto de otro votante u otra posición, así que no hace falta serializar
+  // ni leer-modificar-escribir nada.
+  setVote: async (playerId, voterId, position, level) => {
+    const record: VoteRecord = { playerId, voterId, position, level, updatedAt: new Date().toISOString() };
+    await repository.upsertVote(record);
+    set({
+      votes: [
+        ...get().votes.filter((v) => !(v.playerId === playerId && v.voterId === voterId && v.position === position)),
+        record,
+      ],
+    });
   },
 }));

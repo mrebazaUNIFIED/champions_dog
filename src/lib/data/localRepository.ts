@@ -1,4 +1,4 @@
-import type { ChampionshipConfig, HistoryEntry, Player, PlayerVotes, SelectionResult } from '../../types';
+import type { ChampionshipConfig, HistoryEntry, Player, Position, SelectionResult, SkillLevel, VoteRecord } from '../../types';
 import type { DataRepository } from './repository.types';
 
 const KEYS = {
@@ -6,7 +6,7 @@ const KEYS = {
   config: 'pdl.config',
   history: 'pdl.history',
   currentSelection: 'pdl.currentSelection',
-  playerVotes: 'pdl.playerVotes',
+  votes: 'pdl.votes',
 };
 
 function read<T>(key: string, fallback: T): T {
@@ -56,16 +56,28 @@ export class LocalRepository implements DataRepository {
     );
   }
 
-  async listPlayerVotes(): Promise<PlayerVotes[]> {
-    return read<PlayerVotes[]>(KEYS.playerVotes, []);
+  async listVotes(): Promise<VoteRecord[]> {
+    return read<VoteRecord[]>(KEYS.votes, []);
   }
 
-  async upsertPlayerVotes(votes: PlayerVotes): Promise<void> {
-    const list = await this.listPlayerVotes();
-    const idx = list.findIndex((v) => v.playerId === votes.playerId);
-    if (idx >= 0) list[idx] = votes;
-    else list.push(votes);
-    write(KEYS.playerVotes, list);
+  async upsertVote(record: VoteRecord): Promise<void> {
+    const votes = await this.listVotes();
+    const idx = votes.findIndex((v) => v.playerId === record.playerId && v.voterId === record.voterId && v.position === record.position);
+    if (idx >= 0) votes[idx] = record;
+    else votes.push(record);
+    write(KEYS.votes, votes);
+  }
+
+  async applyPositionLevel(playerId: string, position: Position, level: SkillLevel): Promise<void> {
+    const players = await this.listPlayers();
+    const idx = players.findIndex((p) => p.id === playerId);
+    if (idx === -1) return;
+    players[idx] = {
+      ...players[idx],
+      positionLevels: { ...players[idx].positionLevels, [position]: level },
+      updatedAt: new Date().toISOString(),
+    };
+    write(KEYS.players, players);
   }
 
   async getConfig(): Promise<ChampionshipConfig | null> {

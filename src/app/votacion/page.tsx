@@ -18,6 +18,7 @@ import { usePlayersStore } from '../../store/usePlayersStore';
 import { useVotesStore } from '../../store/useVotesStore';
 import {
   averageVoteForPosition,
+  buildVoteMap,
   hasVotedAllPositions,
   POSITION_LABELS,
   POSITIONS,
@@ -70,7 +71,7 @@ export default function VotacionPage() {
   const players = usePlayersStore((s) => s.players);
   const loadPlayers = usePlayersStore((s) => s.load);
   const playersLoaded = usePlayersStore((s) => s.loaded);
-  const updatePlayer = usePlayersStore((s) => s.updatePlayer);
+  const applyPositionLevel = usePlayersStore((s) => s.applyPositionLevel);
 
   const votes = useVotesStore((s) => s.votes);
   const loadVotes = useVotesStore((s) => s.load);
@@ -95,8 +96,14 @@ export default function VotacionPage() {
   }, []);
 
   const votesByPlayer = useMemo(() => {
+    const byPlayer = new Map<string, typeof votes>();
+    for (const record of votes) {
+      const list = byPlayer.get(record.playerId) ?? [];
+      list.push(record);
+      byPlayer.set(record.playerId, list);
+    }
     const map = new Map<string, VoteMap>();
-    for (const v of votes) map.set(v.playerId, v.votes);
+    for (const [playerId, records] of byPlayer) map.set(playerId, buildVoteMap(records));
     return map;
   }, [votes]);
 
@@ -129,7 +136,7 @@ export default function VotacionPage() {
     await setVote(playerId, voter, position, level);
     const proposed = averageVoteForPosition(updatedVotesForPlayer, position);
     if (proposed && proposed !== player.positionLevels[position]) {
-      await updatePlayer(playerId, { positionLevels: { ...player.positionLevels, [position]: proposed } });
+      await applyPositionLevel(playerId, position, proposed);
     }
   }
 

@@ -18,16 +18,32 @@ export const VOTERS: Voter[] = [
   { id: 'marlon', name: 'Marlon' },
 ];
 
+/**
+ * Un voto individual: un votante, un jugador, una posición, un nivel. Es la unidad atómica
+ * que se guarda en la base — nunca se lee-modifica-escribe un blob compartido entre
+ * jugadores/votantes, así que dos personas votando al mismo tiempo nunca se pisan.
+ */
+export interface VoteRecord {
+  playerId: string;
+  voterId: VoterId;
+  position: Position;
+  level: SkillLevel;
+  updatedAt: string;
+}
+
 /** Los votos de un votante para un jugador: un nivel (1-6) por posición. */
 export type PositionVotes = Partial<Record<Position, SkillLevel>>;
 
 /** Los votos de todos los votantes para un jugador. */
 export type VoteMap = Partial<Record<VoterId, PositionVotes>>;
 
-export interface PlayerVotes {
-  playerId: string;
-  votes: VoteMap;
-  updatedAt: string;
+/** Agrupa la lista plana de votos de un jugador en la forma votante → posición → nivel. */
+export function buildVoteMap(records: VoteRecord[]): VoteMap {
+  const map: VoteMap = {};
+  for (const r of records) {
+    map[r.voterId] = { ...map[r.voterId], [r.position]: r.level };
+  }
+  return map;
 }
 
 /** Promedio de los votos emitidos para una posición puntual, redondeado 1-6. Null si nadie votó esa posición. */

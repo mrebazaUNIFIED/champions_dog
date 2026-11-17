@@ -1,4 +1,4 @@
-import type { ChampionshipConfig, HistoryEntry, Player, PlayerVotes, SelectionResult } from '../../types';
+import type { ChampionshipConfig, HistoryEntry, Player, Position, SelectionResult, SkillLevel, VoteRecord } from '../../types';
 
 export interface DataRepository {
   readonly backend: 'supabase' | 'local';
@@ -8,8 +8,13 @@ export interface DataRepository {
   upsertPlayers(players: Player[]): Promise<void>;
   deletePlayer(id: string): Promise<void>;
 
-  listPlayerVotes(): Promise<PlayerVotes[]>;
-  upsertPlayerVotes(votes: PlayerVotes): Promise<void>;
+  listVotes(): Promise<VoteRecord[]>;
+  upsertVote(record: VoteRecord): Promise<void>;
+
+  /** Aplica un nivel a una posición puntual de un jugador directamente en la base, de forma
+   * atómica: nunca lee-modifica-escribe el objeto `positionLevels` completo desde el cliente,
+   * así que dos votos concurrentes sobre posiciones distintas del mismo jugador nunca se pisan. */
+  applyPositionLevel(playerId: string, position: Position, level: SkillLevel): Promise<void>;
 
   getConfig(): Promise<ChampionshipConfig | null>;
   saveConfig(config: ChampionshipConfig): Promise<void>;

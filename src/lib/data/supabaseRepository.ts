@@ -1,5 +1,5 @@
 import { supabase } from '../supabase/client';
-import type { ChampionshipConfig, HistoryEntry, Player, PlayerVotes, Position, SelectionResult, SkillLevel, VoteMap } from '../../types';
+import type { ChampionshipConfig, HistoryEntry, Player, Position, SelectionResult, SkillLevel, VoteRecord } from '../../types';
 import type { DataRepository } from './repository.types';
 
 interface PlayerRow {
@@ -80,20 +80,40 @@ export class SupabaseRepository implements DataRepository {
     if (error) throw error;
   }
 
-  async listPlayerVotes(): Promise<PlayerVotes[]> {
-    const { data, error } = await this.client().from('player_votes').select('*');
+  async listVotes(): Promise<VoteRecord[]> {
+    const { data, error } = await this.client().from('player_position_votes').select('*');
     if (error) throw error;
     return (data ?? []).map((row) => ({
       playerId: row.player_id as string,
-      votes: (row.votes as VoteMap) ?? {},
+      voterId: row.voter_id as VoteRecord['voterId'],
+      position: row.position as Position,
+      level: row.level as SkillLevel,
       updatedAt: row.updated_at as string,
     }));
   }
 
-  async upsertPlayerVotes(votes: PlayerVotes): Promise<void> {
+  async upsertVote(record: VoteRecord): Promise<void> {
     const { error } = await this.client()
-      .from('player_votes')
-      .upsert({ player_id: votes.playerId, votes: votes.votes, updated_at: votes.updatedAt });
+      .from('player_position_votes')
+      .upsert(
+        {
+          player_id: record.playerId,
+          voter_id: record.voterId,
+          position: record.position,
+          level: record.level,
+          updated_at: record.updatedAt,
+        },
+        { onConflict: 'player_id,voter_id,position' },
+      );
+    if (error) throw error;
+  }
+
+  async applyPositionLevel(playerId: string, position: Position, level: SkillLevel): Promise<void> {
+    const { error } = await this.client().rpc('apply_position_level', {
+      p_player_id: playerId,
+      p_position: position,
+      p_level: level,
+    });
     if (error) throw error;
   }
 
