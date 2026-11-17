@@ -93,7 +93,7 @@ export default function ConfiguracionPage() {
         <CardTitle>Persistencia de datos</CardTitle>
         <div
           className={`mt-3 flex items-center gap-2 rounded-lg border px-3 py-2 text-sm ${
-            isSupabaseConfigured ? 'border-green-200 bg-green-50 text-green-700' : 'border-amber-200 bg-amber-50 text-amber-700'
+            isSupabaseConfigured ? 'border-green-200 bg-green-50 text-green-700' : 'border-gray-300 bg-gray-50 text-gray-700'
           }`}
         >
           {isSupabaseConfigured ? <FiCloud /> : <FiDatabase />}

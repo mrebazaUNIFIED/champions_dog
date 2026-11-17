@@ -60,7 +60,7 @@ export default function DashboardPage() {
           <div className="flex items-start gap-3">
             <span
               className={`mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-full ${
-                feasibility.ok ? 'bg-green-50 text-green-600' : 'bg-amber-50 text-amber-600'
+                feasibility.ok ? 'bg-green-50 text-green-600' : 'bg-gray-100 text-gray-600'
               }`}
             >
               {feasibility.ok ? <FiCheckCircle /> : <FiAlertTriangle />}
@@ -73,7 +73,7 @@ export default function DashboardPage() {
                   : feasibility.message}
               </p>
               {!feasibility.ok && feasibility.shortages.length > 0 && (
-                <ul className="mt-2 space-y-1 text-sm text-amber-700">
+                <ul className="mt-2 space-y-1 text-sm text-gray-700">
                   {feasibility.shortages.map((s) => (
                     <li key={s.position}>
                       · Faltan jugadores de {s.position}: hay {s.eligibleAvailable}, se necesitan {s.needed}

@@ -1,10 +1,10 @@
 import type { Metadata } from 'next';
-import { Inter, Rajdhani } from 'next/font/google';
+import { Bebas_Neue, Inter } from 'next/font/google';
 import AppShell from '../components/layout/AppShell';
 import './globals.css';
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-inter' });
-const rajdhani = Rajdhani({ subsets: ['latin'], weight: ['500', '600', '700'], variable: '--font-rajdhani' });
+const bebasNeue = Bebas_Neue({ subsets: ['latin'], weight: ['400'], variable: '--font-bebas' });
 
 export const metadata: Metadata = {
   title: '4.º Campeonato Perritos Locos — Selección de Equipos',
@@ -19,7 +19,7 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="es">
-      <body className={`${inter.variable} ${rajdhani.variable}`}>
+      <body className={`${inter.variable} ${bebasNeue.variable}`}>
         <AppShell>{children}</AppShell>
       </body>
     </html>

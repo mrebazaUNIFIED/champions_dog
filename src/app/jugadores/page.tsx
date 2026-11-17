@@ -85,7 +85,7 @@ export default function JugadoresPage() {
         <Card className="border-green-200">
           <p className="text-sm font-medium text-green-700">Se importaron {importFeedback.added} jugadores.</p>
           {importFeedback.errors.length > 0 && (
-            <ul className="mt-2 max-h-32 space-y-1 overflow-y-auto text-xs text-amber-700">
+            <ul className="mt-2 max-h-32 space-y-1 overflow-y-auto text-xs text-red-700">
               {importFeedback.errors.map((err, i) => (
                 <li key={i}>· {err}</li>
               ))}

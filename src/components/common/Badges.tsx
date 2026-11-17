@@ -1,10 +1,10 @@
 import { POSITION_LABELS, SKILL_LABELS, type Position, type SkillLevel } from '../../types';
 
 const POSITION_COLORS: Record<Position, string> = {
-  arquero: 'bg-amber-50 text-amber-700 border-amber-200',
-  defensa: 'bg-sky-50 text-sky-700 border-sky-200',
-  mediocampista: 'bg-violet-50 text-violet-700 border-violet-200',
-  delantero: 'bg-rose-50 text-rose-700 border-rose-200',
+  arquero: 'bg-gray-100 text-gray-700 border-gray-300',
+  defensa: 'bg-green-50 text-green-700 border-green-200',
+  mediocampista: 'bg-gray-50 text-gray-600 border-gray-200',
+  delantero: 'bg-red-50 text-red-700 border-red-200',
 };
 
 export function PositionBadge({ position, className = '' }: { position: Position; className?: string }) {
@@ -16,12 +16,12 @@ export function PositionBadge({ position, className = '' }: { position: Position
 }
 
 const SKILL_COLORS: Record<SkillLevel, string> = {
-  1: 'bg-green-50 text-green-700 border-green-200',
-  2: 'bg-sky-50 text-sky-700 border-sky-200',
-  3: 'bg-yellow-50 text-yellow-700 border-yellow-200',
-  4: 'bg-orange-50 text-orange-700 border-orange-200',
+  1: 'bg-green-100 text-green-800 border-green-300',
+  2: 'bg-green-50 text-green-700 border-green-200',
+  3: 'bg-gray-100 text-gray-700 border-gray-300',
+  4: 'bg-gray-50 text-gray-600 border-gray-200',
   5: 'bg-red-50 text-red-700 border-red-200',
-  6: 'bg-surface-100 text-ink-500 border-surface-200',
+  6: 'bg-red-100 text-red-800 border-red-300',
 };
 
 export function SkillBadge({ level, className = '' }: { level: SkillLevel; className?: string }) {

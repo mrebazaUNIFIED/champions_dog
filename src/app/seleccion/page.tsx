@@ -142,10 +142,10 @@ export default function SeleccionPage() {
       )}
 
       {!feasibility.ok && (
-        <Card className="border-amber-200">
+        <Card className="border-gray-300">
           <div className="flex items-start gap-3">
-            <FiAlertTriangle className="mt-1 text-amber-600" />
-            <div className="text-sm text-amber-700">
+            <FiAlertTriangle className="mt-1 text-gray-600" />
+            <div className="text-sm text-gray-700">
               <p>{feasibility.message}</p>
               {feasibility.shortages.length > 0 && (
                 <ul className="mt-1 space-y-0.5">

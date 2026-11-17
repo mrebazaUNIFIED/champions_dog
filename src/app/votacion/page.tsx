@@ -2,7 +2,6 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import {
-  FiCheck,
   FiCheckCircle,
   FiChevronLeft,
   FiChevronRight,
@@ -13,7 +12,6 @@ import {
   FiUser,
   FiUsers,
 } from 'react-icons/fi';
-import { SkillBadge } from '../../components/common/Badges';
 import { Button } from '../../components/common/Button';
 import { Card } from '../../components/common/Card';
 import { usePlayersStore } from '../../store/usePlayersStore';
@@ -21,6 +19,27 @@ import { useVotesStore } from '../../store/useVotesStore';
 import { SKILL_LABELS, SKILL_LEVELS, VOTERS, averageVote, type SkillLevel, type VoteMap, type VoterId } from '../../types';
 
 const LAST_VOTER_KEY = 'pdl.lastVoter';
+
+// Iniciales únicas para la tabla resumen: Marco y Marlon comparten las primeras 3 letras.
+const VOTER_SHORT: Record<VoterId, string> = {
+  marco: 'Mc',
+  luis: 'Lu',
+  andair: 'An',
+  edwin: 'Ed',
+  frank: 'Fr',
+  heder: 'He',
+  jenry: 'Je',
+  marlon: 'Ml',
+};
+
+const LEVEL_TEXT_COLORS: Record<SkillLevel, string> = {
+  1: 'text-green-700',
+  2: 'text-green-600',
+  3: 'text-gray-600',
+  4: 'text-gray-500',
+  5: 'text-red-600',
+  6: 'text-red-700',
+};
 
 function readLastVoter(): VoterId | null {
   try {
@@ -85,11 +104,16 @@ export default function VotacionPage() {
     ? sortedPlayers.filter((p) => typeof (votesByPlayer.get(p.id) ?? {})[voterId] === 'number').length
     : 0;
 
-  function applyAverages() {
-    for (const player of sortedPlayers) {
-      const proposed = averageVote(votesByPlayer.get(player.id) ?? {});
-      if (proposed && proposed !== player.skillLevel) void updatePlayer(player.id, { skillLevel: proposed });
-    }
+  async function castVote(playerId: string, voter: VoterId, level: SkillLevel | null) {
+    const player = sortedPlayers.find((p) => p.id === playerId);
+    if (!player) return;
+    const updatedVotes = { ...votesByPlayer.get(playerId) };
+    if (level === null) delete updatedVotes[voter];
+    else updatedVotes[voter] = level;
+
+    await setVote(playerId, voter, level);
+    const proposed = averageVote(updatedVotes);
+    if (proposed && proposed !== player.skillLevel) await updatePlayer(playerId, { skillLevel: proposed });
   }
 
   function pickVoter(id: VoterId) {
@@ -109,7 +133,7 @@ export default function VotacionPage() {
     if (!voterId) return;
     const player = sortedPlayers[index];
     if (!player) return;
-    void setVote(player.id, voterId, level);
+    void castVote(player.id, voterId, level);
     setFlash(level);
     setTimeout(() => {
       setFlash(null);
@@ -134,8 +158,8 @@ export default function VotacionPage() {
       <div>
         <h2 className="font-display text-2xl font-bold text-ink-900">Votación de niveles</h2>
         <p className="text-sm text-ink-500">
-          Cada votante elige su nombre y va calificando a los jugadores uno por uno (nivel 1 a 6). El promedio de los 8
-          votos se puede aplicar como nivel oficial.
+          Cada votante elige su nombre y va calificando a los jugadores uno por uno (nivel 1 a 6). El nivel oficial de
+          cada jugador se actualiza solo, con el promedio de los votos recibidos hasta el momento.
         </p>
       </div>
 
@@ -243,79 +267,66 @@ export default function VotacionPage() {
             <FiUsers className="text-brand-600" />
             {fullyVotedCount} de {sortedPlayers.length} jugadores con los 8 votos
           </div>
-          <div className="flex gap-2">
-            <Button variant="secondary" onClick={() => setShowTable((s) => !s)}>
-              {showTable ? <FiEyeOff /> : <FiEye />} {showTable ? 'Ocultar tabla completa' : 'Ver tabla completa'}
-            </Button>
-            <Button onClick={applyAverages}>
-              <FiCheckCircle /> Aplicar todos los promedios
-            </Button>
-          </div>
+          <Button variant="secondary" onClick={() => setShowTable((s) => !s)}>
+            {showTable ? <FiEyeOff /> : <FiEye />} {showTable ? 'Ocultar resumen' : 'Ver resumen de todos'}
+          </Button>
         </div>
 
         {showTable && (
-          <Card className="overflow-x-auto p-0">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="border-b border-surface-200 text-left text-xs uppercase tracking-wide text-ink-400">
-                  <th className="sticky left-0 z-10 bg-surface-0 px-4 py-3">Jugador</th>
+          <div className="space-y-1.5">
+            <p className="text-xs text-ink-400 sm:hidden">Deslizá hacia la derecha para ver a todos los votantes →</p>
+            <Card className="overflow-x-auto p-0">
+              <table className="w-full table-fixed text-sm">
+                <colgroup>
+                  <col className="w-24 sm:w-40" />
                   {VOTERS.map((voter) => (
-                    <th key={voter.id} className="px-1 py-3 text-center">
-                      {voter.name}
-                    </th>
+                    <col key={voter.id} className="w-9" />
                   ))}
-                  <th className="px-3 py-3 text-center">Promedio</th>
-                  <th className="px-3 py-3 text-center">Nivel actual</th>
-                  <th className="px-3 py-3 text-center">Acción</th>
-                </tr>
-              </thead>
-              <tbody>
-                {sortedPlayers.map((player) => {
-                  const playerVotes = votesByPlayer.get(player.id) ?? {};
-                  const proposed = averageVote(playerVotes);
-                  return (
-                    <tr key={player.id} className="border-b border-surface-200 last:border-0 hover:bg-surface-50">
-                      <td className="sticky left-0 z-10 bg-surface-0 px-4 py-2 font-medium text-ink-900">{player.fullName}</td>
-                      {VOTERS.map((voter) => (
-                        <td key={voter.id} className="px-1 py-2 text-center">
-                          <select
-                            value={playerVotes[voter.id] ?? ''}
-                            onChange={(e) => {
-                              const value = e.target.value;
-                              void setVote(player.id, voter.id, value === '' ? null : (Number(value) as SkillLevel));
-                            }}
-                            className="w-14 rounded-md border border-surface-300 bg-surface-0 px-1 py-1 text-center text-xs text-ink-900 outline-none focus:border-brand-500"
-                          >
-                            <option value="">–</option>
-                            {SKILL_LEVELS.map((level) => (
-                              <option key={level} value={level}>
-                                {level}
-                              </option>
-                            ))}
-                          </select>
+                  <col className="w-20" />
+                </colgroup>
+                <thead>
+                  <tr className="border-b border-surface-200 text-left text-xs text-ink-400">
+                    <th className="sticky left-0 z-10 bg-surface-0 px-3 py-3">Jugador</th>
+                    {VOTERS.map((voter) => (
+                      <th key={voter.id} className="px-1 py-3 text-center font-medium" title={voter.name}>
+                        {VOTER_SHORT[voter.id]}
+                      </th>
+                    ))}
+                    <th className="px-2 py-3 text-center">Nivel</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {sortedPlayers.map((player) => {
+                    const playerVotes = votesByPlayer.get(player.id) ?? {};
+                    return (
+                      <tr key={player.id} className="border-b border-surface-200 last:border-0 hover:bg-surface-50">
+                        <td className="sticky left-0 z-10 bg-surface-0 px-3 py-2 font-medium text-ink-900">{player.fullName}</td>
+                        {VOTERS.map((voter) => {
+                          const v = playerVotes[voter.id];
+                          return (
+                            <td key={voter.id} className="px-1 py-2 text-center text-xs">
+                              {v ? (
+                                <span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-surface-100 font-semibold text-ink-700">
+                                  {v}
+                                </span>
+                              ) : (
+                                <span className="text-surface-300">–</span>
+                              )}
+                            </td>
+                          );
+                        })}
+                        <td className="px-2 py-2 text-center">
+                          <span className={`text-xs font-semibold whitespace-nowrap ${LEVEL_TEXT_COLORS[player.skillLevel]}`}>
+                            Nivel {player.skillLevel}
+                          </span>
                         </td>
-                      ))}
-                      <td className="px-3 py-2 text-center">
-                        {proposed ? <SkillBadge level={proposed} /> : <span className="text-xs text-ink-400">Sin votos</span>}
-                      </td>
-                      <td className="px-3 py-2 text-center">
-                        <SkillBadge level={player.skillLevel} />
-                      </td>
-                      <td className="px-3 py-2 text-center">
-                        <Button
-                          variant="secondary"
-                          disabled={!proposed || proposed === player.skillLevel}
-                          onClick={() => proposed && void updatePlayer(player.id, { skillLevel: proposed })}
-                        >
-                          <FiCheck /> Aplicar
-                        </Button>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </Card>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </Card>
+          </div>
         )}
       </div>
     </div>

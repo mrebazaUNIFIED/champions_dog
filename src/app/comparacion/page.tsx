@@ -68,7 +68,7 @@ export default function ComparacionPage() {
 
       <div className="grid gap-4 sm:grid-cols-3">
         <Card className="flex items-center gap-3">
-          <FiArrowUp className="text-xl text-amber-500" />
+          <FiArrowUp className="text-xl text-green-600" />
           <div>
             <p className="text-sm text-ink-500">Equipo más fuerte</p>
             <p className="font-display font-bold text-ink-900">{strongest?.name}</p>

@@ -10,12 +10,12 @@ export const DEFAULT_FORMATION: Formation = {
 };
 
 export const DEFAULT_TEAM_COLORS = [
-  '#22c55e', // verde
-  '#3b82f6', // azul
+  '#16a34a', // verde
   '#ef4444', // rojo
-  '#eab308', // amarillo
-  '#a855f7', // violeta
-  '#f97316', // naranja
+  '#64748b', // gris
+  '#15803d', // verde oscuro
+  '#991b1b', // rojo oscuro
+  '#334155', // gris oscuro
 ];
 
 export interface TeamDefault {

@@ -85,14 +85,14 @@ export default function CampeonatoConfigPage() {
           {feasibility.ok ? (
             <FiCheckCircle className="mt-1 text-brand-600" />
           ) : (
-            <FiAlertTriangle className="mt-1 text-amber-600" />
+            <FiAlertTriangle className="mt-1 text-gray-600" />
           )}
           <div className="text-sm text-ink-700">
             {feasibility.ok ? (
               <p>Hay suficientes jugadores disponibles para esta formación.</p>
             ) : (
               <>
-                <p className="text-amber-700">{feasibility.message}</p>
+                <p className="text-gray-700">{feasibility.message}</p>
                 {feasibility.shortages.length > 0 && (
                   <ul className="mt-2 space-y-1">
                     {feasibility.shortages.map((s) => (
