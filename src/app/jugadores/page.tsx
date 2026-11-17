@@ -10,6 +10,7 @@ import {
   FiTrash2,
   FiUpload,
 } from 'react-icons/fi';
+import { FiCheck } from 'react-icons/fi';
 import { PositionBadge, PositionLevelsBadge, SkillBadge } from '../../components/common/Badges';
 import { Button } from '../../components/common/Button';
 import { Card, CardTitle } from '../../components/common/Card';
@@ -17,7 +18,6 @@ import { PlayerFormModal } from '../../components/players/PlayerFormModal';
 import { downloadPlayersTemplate, exportPlayersToExcel, parsePlayersExcel } from '../../lib/export/excel';
 import { usePlayersStore } from '../../store/usePlayersStore';
 import {
-  generalLevel,
   overallLevel,
   POSITIONS,
   POSITION_LABELS,
@@ -26,6 +26,34 @@ import {
   type Position,
   type SkillLevel,
 } from '../../types';
+
+const TARGET_GROUP_SIZE = 6;
+
+/**
+ * Reparte a todos los jugadores en 6 grupos parejos (lo más cerca posible de 6 cada uno),
+ * ordenados de mejor a peor según el promedio de sus 4 niveles por posición. No es un
+ * promedio redondeado por jugador (eso da grupos desparejos); es un ranking relativo al
+ * resto del plantel, pensado para armar los 6 equipos con un jugador de cada nivel.
+ */
+function buildLevelTiers(players: Player[]): Player[][] {
+  const ranked = [...players]
+    .map((p) => ({
+      player: p,
+      score: POSITIONS.reduce((sum, pos) => sum + p.positionLevels[pos], 0) / POSITIONS.length,
+    }))
+    .sort((a, b) => a.score - b.score || a.player.fullName.localeCompare(b.player.fullName));
+
+  const base = Math.floor(ranked.length / TARGET_GROUP_SIZE);
+  const remainder = ranked.length % TARGET_GROUP_SIZE;
+  const tiers: Player[][] = [];
+  let cursor = 0;
+  for (let i = 0; i < TARGET_GROUP_SIZE; i++) {
+    const size = base + (i < remainder ? 1 : 0);
+    tiers.push(ranked.slice(cursor, cursor + size).map((r) => r.player));
+    cursor += size;
+  }
+  return tiers;
+}
 
 export default function JugadoresPage() {
   const players = usePlayersStore((s) => s.players);
@@ -42,12 +70,7 @@ export default function JugadoresPage() {
   const [importFeedback, setImportFeedback] = useState<{ added: number; errors: string[] } | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
 
-  const levelSummary = useMemo(() => {
-    const groups = new Map<SkillLevel, Player[]>();
-    for (const level of SKILL_LEVELS) groups.set(level, []);
-    for (const p of players) groups.get(generalLevel(p))?.push(p);
-    return groups;
-  }, [players]);
+  const levelTiers = useMemo(() => buildLevelTiers(players), [players]);
 
   const filtered = useMemo(() => {
     return players.filter((p) => {
@@ -101,7 +124,8 @@ export default function JugadoresPage() {
         <div className="p-5 pb-0">
           <CardTitle>Resumen general de niveles</CardTitle>
           <p className="mt-1 text-sm text-ink-500">
-            El nivel general de cada jugador es el promedio de sus 4 niveles por posición.
+            Los {players.length} jugadores se ordenan de mejor a peor (promedio de sus 4 niveles por posición) y se
+            reparten en 6 grupos parejos, para armar los 6 equipos con un jugador de cada nivel.
           </p>
         </div>
         <table className="w-full text-sm">
@@ -113,14 +137,23 @@ export default function JugadoresPage() {
             </tr>
           </thead>
           <tbody>
-            {SKILL_LEVELS.map((level) => {
-              const group = levelSummary.get(level) ?? [];
+            {SKILL_LEVELS.map((level, idx) => {
+              const group = levelTiers[idx] ?? [];
+              const isSix = group.length === TARGET_GROUP_SIZE;
               return (
                 <tr key={level} className="border-b border-surface-200 last:border-0">
                   <td className="px-4 py-3">
                     <SkillBadge level={level} />
                   </td>
-                  <td className="px-4 py-3 font-semibold text-ink-900">{group.length}</td>
+                  <td className="px-4 py-3">
+                    <span
+                      className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-semibold ${
+                        isSix ? 'bg-green-50 text-green-700' : 'bg-gray-100 text-gray-600'
+                      }`}
+                    >
+                      {isSix && <FiCheck />} {group.length}
+                    </span>
+                  </td>
                   <td className="px-4 py-3 text-ink-500">
                     {group.length > 0 ? group.map((p) => p.fullName).join(', ') : '—'}
                   </td>
