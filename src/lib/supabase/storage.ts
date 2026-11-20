@@ -3,12 +3,23 @@ import { supabase } from './client';
 const PLAYER_PHOTOS_BUCKET = 'player-photos';
 const TOURNAMENT_MEDIA_BUCKET = 'tournament-media';
 
+// Nada de svg: un svg puede traer <script> embebido (XSS almacenado) si se llega a
+// renderizar como documento en vez de como imagen. Solo tipos de imagen real.
+const ALLOWED_MIME_TYPES: Record<string, string> = {
+  'image/png': 'png',
+  'image/jpeg': 'jpg',
+  'image/webp': 'webp',
+};
+
 async function uploadToBucket(bucket: string, path: string, file: File): Promise<string> {
   if (!supabase) throw new Error('Supabase no está configurado.');
+  if (!(file.type in ALLOWED_MIME_TYPES)) {
+    throw new Error('Formato de imagen no permitido. Usá PNG, JPG o WEBP.');
+  }
 
   const { error } = await supabase.storage.from(bucket).upload(path, file, {
     upsert: false,
-    contentType: file.type || undefined,
+    contentType: file.type,
   });
   if (error) throw error;
 
@@ -17,7 +28,7 @@ async function uploadToBucket(bucket: string, path: string, file: File): Promise
 }
 
 function randomPath(file: File, folder?: string): string {
-  const extension = file.name.split('.').pop()?.toLowerCase() || 'jpg';
+  const extension = ALLOWED_MIME_TYPES[file.type] ?? 'jpg';
   const name = `${crypto.randomUUID()}.${extension}`;
   return folder ? `${folder}/${name}` : name;
 }

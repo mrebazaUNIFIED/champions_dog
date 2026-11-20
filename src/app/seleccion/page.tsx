@@ -2,17 +2,7 @@
 
 import { AnimatePresence, motion } from 'framer-motion';
 import { useEffect, useRef, useState } from 'react';
-import {
-  FiCheckCircle,
-  FiAlertTriangle,
-  FiGrid,
-  FiFileText,
-  FiImage,
-  FiZap,
-  FiSave,
-  FiLoader,
-  FiTrash2,
-} from 'react-icons/fi';
+import { Icon } from '../../components/common/Icon';
 import { BallIcon } from '../../components/common/BallIcon';
 import { Button } from '../../components/common/Button';
 import { Card } from '../../components/common/Card';
@@ -127,24 +117,24 @@ export default function SeleccionPage() {
     <div className="space-y-6">
       <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
         <div>
-          <h2 className="font-display text-2xl font-bold text-ink-900">Selección de equipos</h2>
-          <p className="text-sm text-ink-500">Generá los 6 equipos y ajustalos manualmente si hace falta.</p>
+          <h2 className="font-display text-2xl font-bold text-on-surface">Selección de equipos</h2>
+          <p className="text-sm text-on-surface-variant">Generá los 6 equipos y ajustalos manualmente si hace falta.</p>
         </div>
         <Button onClick={handleGenerateClick} disabled={!feasibility.ok || generating} className="px-6 py-3 text-base">
-          <FiZap /> GENERAR SELECCIÓN DE EQUIPOS
+          <Icon name="bolt" /> GENERAR SELECCIÓN DE EQUIPOS
         </Button>
       </div>
 
       {savedMessage && (
         <Card className="flex items-center gap-2 border-green-200 text-sm text-green-700">
-          <FiCheckCircle /> {savedMessage}
+          <Icon name="check_circle" /> {savedMessage}
         </Card>
       )}
 
       {!feasibility.ok && (
         <Card className="border-gray-300">
           <div className="flex items-start gap-3">
-            <FiAlertTriangle className="mt-1 text-gray-600" />
+            <Icon name="warning" className="mt-1 text-gray-600" />
             <div className="text-sm text-gray-700">
               <p>{feasibility.message}</p>
               {feasibility.shortages.length > 0 && (
@@ -163,7 +153,7 @@ export default function SeleccionPage() {
 
       {error && (
         <Card className="border-red-200 text-sm text-red-600">
-          <FiAlertTriangle className="mr-2 inline" /> {error}
+          <Icon name="warning" className="mr-2 inline" /> {error}
         </Card>
       )}
 
@@ -182,7 +172,7 @@ export default function SeleccionPage() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[70] flex flex-col items-center justify-center gap-4 bg-pitch-950/95"
+            className="fixed inset-0 z-[70] flex flex-col items-center justify-center gap-4 bg-surface-container-lowest/95"
           >
             <motion.div
               animate={{ rotate: 360 }}
@@ -198,7 +188,7 @@ export default function SeleccionPage() {
 
       {proposals.length > 1 && (
         <Card>
-          <p className="mb-3 text-sm text-ink-500">Propuestas generadas (ordenadas de más a menos equilibrada):</p>
+          <p className="mb-3 text-sm text-on-surface-variant">Propuestas generadas (ordenadas de más a menos equilibrada):</p>
           <div className="flex flex-wrap gap-2">
             {proposals.map((p, i) => (
               <button
@@ -206,8 +196,8 @@ export default function SeleccionPage() {
                 onClick={() => chooseProposal(i)}
                 className={`rounded-lg border px-4 py-2 text-sm ${
                   current?.generatedAt === p.generatedAt
-                    ? 'border-brand-500 bg-green-50 text-brand-600'
-                    : 'border-surface-300 text-ink-500 hover:bg-surface-50'
+                    ? 'border-primary-container bg-green-50 text-primary-fixed-dim'
+                    : 'border-white/15 text-on-surface-variant hover:bg-background'
                 }`}
               >
                 Propuesta {i + 1} · diferencia {p.maxDiff}
@@ -221,23 +211,23 @@ export default function SeleccionPage() {
         <>
           <div className="flex flex-wrap gap-2">
             <Button variant="secondary" disabled={exporting !== null} onClick={() => handleExport('pdf')}>
-              {exporting === 'pdf' ? <FiLoader className="animate-spin" /> : <FiFileText />} PDF
+              {exporting === 'pdf' ? <Icon name="progress_activity" className="animate-spin" /> : <Icon name="description" />} PDF
             </Button>
             <Button variant="secondary" disabled={exporting !== null} onClick={() => handleExport('excel')}>
-              {exporting === 'excel' ? <FiLoader className="animate-spin" /> : <FiGrid />} Excel
+              {exporting === 'excel' ? <Icon name="progress_activity" className="animate-spin" /> : <Icon name="grid_view" />} Excel
             </Button>
             <Button variant="secondary" disabled={exporting !== null} onClick={() => handleExport('image')}>
-              {exporting === 'image' ? <FiLoader className="animate-spin" /> : <FiImage />} Imagen (WhatsApp)
+              {exporting === 'image' ? <Icon name="progress_activity" className="animate-spin" /> : <Icon name="image" />} Imagen (WhatsApp)
             </Button>
             <Button variant="secondary" onClick={() => setSaveHistoryOpen(true)}>
-              <FiSave /> Guardar en historial
+              <Icon name="save" /> Guardar en historial
             </Button>
             <Button variant="danger" onClick={() => setConfirmDiscard(true)}>
-              <FiTrash2 /> Descartar
+              <Icon name="delete" /> Descartar
             </Button>
           </div>
 
-          <div ref={exportRef} className="grid gap-4 bg-surface-50 p-1 sm:grid-cols-2 xl:grid-cols-3">
+          <div ref={exportRef} className="grid gap-4 bg-background p-1 sm:grid-cols-2 xl:grid-cols-3">
             {current.teams.map((team) => (
               <TeamCard
                 key={team.id}
@@ -256,12 +246,12 @@ export default function SeleccionPage() {
 
           {current.unassignedPlayers.length > 0 && (
             <Card>
-              <p className="mb-2 text-sm font-semibold text-ink-700">
+              <p className="mb-2 text-sm font-semibold text-on-surface">
                 Jugadores no convocados ({current.unassignedPlayers.length})
               </p>
               <div className="flex flex-wrap gap-2">
                 {current.unassignedPlayers.map((p) => (
-                  <span key={p.id} className="rounded-full border border-surface-300 px-3 py-1 text-xs text-ink-500">
+                  <span key={p.id} className="rounded-full border border-white/15 px-3 py-1 text-xs text-on-surface-variant">
                     {p.fullName}
                   </span>
                 ))}
@@ -272,13 +262,13 @@ export default function SeleccionPage() {
       )}
 
       {!current && !generating && feasibility.ok && (
-        <Card className="text-center text-sm text-ink-400">
+        <Card className="text-center text-sm text-on-surface-variant">
           Todavía no generaste la selección de equipos para esta edición.
         </Card>
       )}
 
       <Modal open={confirmRegenerate} onClose={() => setConfirmRegenerate(false)} title="Ya existe una selección generada">
-        <p className="text-sm text-ink-700">
+        <p className="text-sm text-on-surface">
           ¿Querés descartarla y generar una nueva, o prefirís mantener la distribución actual?
         </p>
         <div className="mt-4 flex justify-end gap-2">
@@ -298,7 +288,7 @@ export default function SeleccionPage() {
       </Modal>
 
       <Modal open={confirmDiscard} onClose={() => setConfirmDiscard(false)} title="Descartar selección actual">
-        <p className="text-sm text-ink-700">Esta acción borra la distribución generada actualmente (no afecta el historial ya guardado).</p>
+        <p className="text-sm text-on-surface">Esta acción borra la distribución generada actualmente (no afecta el historial ya guardado).</p>
         <div className="mt-4 flex justify-end gap-2">
           <Button variant="ghost" onClick={() => setConfirmDiscard(false)}>
             Cancelar
@@ -316,13 +306,13 @@ export default function SeleccionPage() {
       </Modal>
 
       <Modal open={saveHistoryOpen} onClose={() => setSaveHistoryOpen(false)} title="Guardar en historial">
-        <label className="mb-1 block text-sm text-ink-500">Nombre para esta selección (opcional)</label>
+        <label className="mb-1 block text-sm text-on-surface-variant">Nombre para esta selección (opcional)</label>
         <input
           autoFocus
           value={historyLabel}
           onChange={(e) => setHistoryLabel(e.target.value)}
           placeholder="Ej: Fecha 4 - versión final"
-          className="w-full rounded-lg border border-surface-300 bg-surface-0 px-3 py-2 text-ink-900 outline-none focus:border-brand-500"
+          className="w-full rounded-lg border border-white/15 bg-surface-container-low px-3 py-2 text-on-surface outline-none focus:border-primary-container"
         />
         <div className="mt-4 flex justify-end gap-2">
           <Button variant="ghost" onClick={() => setSaveHistoryOpen(false)}>

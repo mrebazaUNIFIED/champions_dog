@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
-import { FiPlus } from 'react-icons/fi';
+import { Icon } from '../../components/common/Icon';
 import { MatchStatusBadge } from '../../components/common/Badges';
 import { Button } from '../../components/common/Button';
 import { Card } from '../../components/common/Card';
@@ -10,7 +10,31 @@ import { AddMatchModal } from '../../components/matches/AddMatchModal';
 import { MatchDetailModal } from '../../components/matches/MatchDetailModal';
 import { useMatchesStore } from '../../store/useMatchesStore';
 import { useTeamsStore } from '../../store/useTeamsStore';
-import { computeStandings, matchScore } from '../../types';
+import { computeStandings, matchScore, type Match } from '../../types';
+
+const RESULT_COLORS: Record<'W' | 'D' | 'L', string> = {
+  W: 'bg-primary-container text-on-primary-container',
+  D: 'bg-surface-container-highest text-on-surface-variant',
+  L: 'bg-secondary-container text-white',
+};
+
+/** Resultado (V/E/D) de los últimos 5 partidos finalizados de un equipo, del más viejo al más nuevo. */
+function lastResults(teamId: string, matches: Match[]): Array<'W' | 'D' | 'L'> {
+  const finished = matches
+    .filter((m) => m.status === 'finished' && (m.homeTeamId === teamId || m.awayTeamId === teamId))
+    .sort((a, b) => (a.scheduledAt ?? a.createdAt).localeCompare(b.scheduledAt ?? b.createdAt))
+    .slice(-5);
+
+  return finished.map((m) => {
+    const { home, away } = matchScore(m);
+    const isHome = m.homeTeamId === teamId;
+    const own = isHome ? home : away;
+    const opponent = isHome ? away : home;
+    if (own > opponent) return 'W';
+    if (own < opponent) return 'L';
+    return 'D';
+  });
+}
 
 export default function ClasificacionPage() {
   const teams = useTeamsStore((s) => s.teams);
@@ -52,18 +76,18 @@ export default function ClasificacionPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="font-display text-2xl font-bold text-ink-900">Clasificación</h2>
-        <p className="text-sm text-ink-500">Tabla de posiciones y partidos del torneo.</p>
+        <h2 className="font-display text-2xl font-bold text-on-surface">Clasificación</h2>
+        <p className="text-sm text-on-surface-variant">Tabla de posiciones y partidos del torneo.</p>
       </div>
 
       <div className="grid gap-6 lg:grid-cols-[1fr_360px]">
         <Card className="overflow-x-auto p-0">
           {teams.length === 0 ? (
-            <p className="p-6 text-center text-sm text-ink-400">Todavía no hay equipos cargados.</p>
+            <p className="p-6 text-center text-sm text-on-surface-variant">Todavía no hay equipos cargados.</p>
           ) : (
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-surface-200 text-left text-xs uppercase tracking-wide text-ink-400">
+                <tr className="border-b border-white/10 text-left text-xs uppercase tracking-wide text-on-surface-variant">
                   <th className="px-4 py-3">Pos</th>
                   <th className="px-4 py-3">Equipo</th>
                   <th className="px-3 py-3 text-center">PTS</th>
@@ -75,6 +99,7 @@ export default function ClasificacionPage() {
                   <th className="px-3 py-3 text-center">GC</th>
                   <th className="px-3 py-3 text-center">DIF</th>
                   <th className="px-3 py-3 text-center">%</th>
+                  <th className="px-3 py-3 text-center">Últimos 5</th>
                 </tr>
               </thead>
               <tbody>
@@ -82,8 +107,8 @@ export default function ClasificacionPage() {
                   const t = team(row.teamId);
                   if (!t) return null;
                   return (
-                    <tr key={row.teamId} className="border-b border-surface-200 last:border-0">
-                      <td className="px-4 py-3 font-semibold text-ink-900">{i + 1}</td>
+                    <tr key={row.teamId} className="border-b border-white/10 last:border-0">
+                      <td className="px-4 py-3 font-semibold text-on-surface">{i + 1}</td>
                       <td className="px-4 py-3">
                         <div className="flex items-center gap-2">
                           {t.logoUrl ? (
@@ -91,18 +116,33 @@ export default function ClasificacionPage() {
                           ) : (
                             <TeamBadge name={t.name} color={t.color} size={24} />
                           )}
-                          <span className="font-medium text-ink-900">{t.name}</span>
+                          <span className="font-medium text-on-surface">{t.name}</span>
                         </div>
                       </td>
-                      <td className="px-3 py-3 text-center font-bold text-ink-900">{row.points}</td>
-                      <td className="px-3 py-3 text-center text-ink-500">{row.played}</td>
-                      <td className="px-3 py-3 text-center text-ink-500">{row.won}</td>
-                      <td className="px-3 py-3 text-center text-ink-500">{row.drawn}</td>
-                      <td className="px-3 py-3 text-center text-ink-500">{row.lost}</td>
-                      <td className="px-3 py-3 text-center text-ink-500">{row.goalsFor}</td>
-                      <td className="px-3 py-3 text-center text-ink-500">{row.goalsAgainst}</td>
-                      <td className="px-3 py-3 text-center text-ink-500">{row.goalDiff}</td>
-                      <td className="px-3 py-3 text-center text-ink-500">{row.percentage}</td>
+                      <td className="px-3 py-3 text-center font-bold text-on-surface">{row.points}</td>
+                      <td className="px-3 py-3 text-center text-on-surface-variant">{row.played}</td>
+                      <td className="px-3 py-3 text-center text-on-surface-variant">{row.won}</td>
+                      <td className="px-3 py-3 text-center text-on-surface-variant">{row.drawn}</td>
+                      <td className="px-3 py-3 text-center text-on-surface-variant">{row.lost}</td>
+                      <td className="px-3 py-3 text-center text-on-surface-variant">{row.goalsFor}</td>
+                      <td className="px-3 py-3 text-center text-on-surface-variant">{row.goalsAgainst}</td>
+                      <td className="px-3 py-3 text-center text-on-surface-variant">{row.goalDiff}</td>
+                      <td className="px-3 py-3 text-center text-on-surface-variant">{row.percentage}</td>
+                      <td className="px-3 py-3">
+                        <div className="flex justify-center gap-1">
+                          {lastResults(row.teamId, matches).map((result, idx) => (
+                            <span
+                              key={idx}
+                              className={`flex h-5 w-5 items-center justify-center rounded font-label text-[9px] ${RESULT_COLORS[result]}`}
+                            >
+                              {result}
+                            </span>
+                          ))}
+                          {lastResults(row.teamId, matches).length === 0 && (
+                            <span className="text-xs text-on-surface-variant">—</span>
+                          )}
+                        </div>
+                      </td>
                     </tr>
                   );
                 })}
@@ -118,7 +158,7 @@ export default function ClasificacionPage() {
               <select
                 value={phaseFilter}
                 onChange={(e) => setPhaseFilter(e.target.value)}
-                className="rounded-lg border border-white/15 bg-pitch-800 px-2 py-1 text-xs text-white outline-none"
+                className="rounded-lg border border-white/15 bg-surface-container-high px-2 py-1 text-xs text-white outline-none"
               >
                 <option value="all">Todas las fases</option>
                 {phases.map((p) => (
@@ -138,7 +178,7 @@ export default function ClasificacionPage() {
                 <button
                   key={m.id}
                   onClick={() => setSelectedMatchId(m.id)}
-                  className="w-full rounded-xl border border-white/10 bg-pitch-800/60 p-3 text-left transition hover:border-white/25"
+                  className="w-full rounded-xl border border-white/10 bg-surface-container/60 p-3 text-left transition hover:border-white/25"
                 >
                   <div className="mb-1 flex items-center justify-between">
                     <span className="text-[11px] text-white/40">{m.phase}</span>
@@ -157,7 +197,7 @@ export default function ClasificacionPage() {
           </div>
 
           <Button onClick={() => setAddOpen(true)} disabled={teams.length < 2}>
-            <FiPlus /> Agregar partido
+            <Icon name="add" /> Agregar partido
           </Button>
         </div>
       </div>

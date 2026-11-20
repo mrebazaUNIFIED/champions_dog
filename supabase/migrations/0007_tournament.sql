@@ -50,9 +50,10 @@ create policy "awards_all" on awards for all using (true) with check (true);
 create policy "tournament_info_all" on tournament_info for all using (true) with check (true);
 
 -- Storage para logos de equipo y banner del torneo (mismo criterio que 0002_storage.sql).
-insert into storage.buckets (id, name, public)
-values ('tournament-media', 'tournament-media', true)
-on conflict (id) do nothing;
+-- Restringido a imágenes reales (sin svg, para no permitir XSS almacenado) y 5 MB como tope.
+insert into storage.buckets (id, name, public, allowed_mime_types, file_size_limit)
+values ('tournament-media', 'tournament-media', true, array['image/png', 'image/jpeg', 'image/webp'], 5242880)
+on conflict (id) do update set allowed_mime_types = excluded.allowed_mime_types, file_size_limit = excluded.file_size_limit;
 
 create policy "tournament_media_public_read"
   on storage.objects for select

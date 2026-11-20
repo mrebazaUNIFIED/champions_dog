@@ -9,5 +9,5 @@ export function Card({ children, className = '', ...rest }: HTMLAttributes<HTMLD
 }
 
 export function CardTitle({ children, className = '' }: { children: ReactNode; className?: string }) {
-  return <h3 className={`font-display text-base font-semibold text-ink-900 ${className}`}>{children}</h3>;
+  return <h3 className={`font-display text-base uppercase tracking-wide text-on-surface ${className}`}>{children}</h3>;
 }

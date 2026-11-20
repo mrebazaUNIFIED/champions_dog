@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { FiEdit2, FiPlus, FiShield, FiTrash2, FiUsers } from 'react-icons/fi';
+import { Icon } from '../../components/common/Icon';
 import { TeamBadge } from '../../components/common/TeamBadge';
 import { Button } from '../../components/common/Button';
 import { Card } from '../../components/common/Card';
@@ -41,8 +41,8 @@ export default function EquiposPage() {
     <div className="space-y-6">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h2 className="font-display text-2xl font-bold text-ink-900">Equipos</h2>
-          <p className="text-sm text-ink-500">{teams.length} equipos inscritos en el torneo</p>
+          <h2 className="font-display text-2xl font-bold text-on-surface">Equipos</h2>
+          <p className="text-sm text-on-surface-variant">{teams.length} equipos inscritos en el torneo</p>
         </div>
         <Button
           onClick={() => {
@@ -50,13 +50,13 @@ export default function EquiposPage() {
             setModalOpen(true);
           }}
         >
-          <FiPlus /> Nuevo equipo
+          <Icon name="add" /> Nuevo equipo
         </Button>
       </div>
 
       {teams.length === 0 ? (
-        <Card className="flex flex-col items-center gap-2 py-10 text-center text-ink-400">
-          <FiShield className="text-3xl" />
+        <Card className="flex flex-col items-center gap-2 py-10 text-center text-on-surface-variant">
+          <Icon name="shield" className="text-3xl" />
           Todavía no cargaste ningún equipo.
         </Card>
       ) : (
@@ -65,14 +65,14 @@ export default function EquiposPage() {
             <Card key={team.id} className="flex flex-col gap-3">
               <div className="flex items-center gap-3">
                 {team.logoUrl ? (
-                  <img src={team.logoUrl} alt="" className="h-12 w-12 shrink-0 rounded-full border border-surface-200 object-cover" />
+                  <img src={team.logoUrl} alt="" className="h-12 w-12 shrink-0 rounded-full border border-white/10 object-cover" />
                 ) : (
                   <TeamBadge name={team.name} color={team.color} size={48} />
                 )}
                 <div className="min-w-0 flex-1">
-                  <p className="truncate font-display text-lg leading-tight text-ink-900">{team.name}</p>
-                  <p className="flex items-center gap-1 text-xs text-ink-400">
-                    <FiUsers /> {team.playerIds.length} jugadores
+                  <p className="truncate font-display text-lg leading-tight text-on-surface">{team.name}</p>
+                  <p className="flex items-center gap-1 text-xs text-on-surface-variant">
+                    <Icon name="group" /> {team.playerIds.length} jugadores
                   </p>
                 </div>
                 <div className="flex shrink-0 gap-1">
@@ -81,10 +81,10 @@ export default function EquiposPage() {
                       setEditing(team);
                       setModalOpen(true);
                     }}
-                    className="rounded-lg p-2 text-ink-500 hover:bg-surface-100 hover:text-ink-900"
+                    className="rounded-lg p-2 text-on-surface-variant hover:bg-surface-container hover:text-on-surface"
                     aria-label="Editar"
                   >
-                    <FiEdit2 />
+                    <Icon name="edit" />
                   </button>
                   <button
                     onClick={() => {
@@ -93,12 +93,12 @@ export default function EquiposPage() {
                     className="rounded-lg p-2 text-red-400 hover:bg-red-50 hover:text-red-600"
                     aria-label="Eliminar"
                   >
-                    <FiTrash2 />
+                    <Icon name="delete" />
                   </button>
                 </div>
               </div>
               {team.playerIds.length > 0 && (
-                <p className="text-xs text-ink-500">{team.playerIds.map(playerName).join(', ')}</p>
+                <p className="text-xs text-on-surface-variant">{team.playerIds.map(playerName).join(', ')}</p>
               )}
             </Card>
           ))}

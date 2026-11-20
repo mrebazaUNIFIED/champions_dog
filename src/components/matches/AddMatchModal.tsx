@@ -58,22 +58,22 @@ export function AddMatchModal({ open, onClose, onSubmit, teams, defaultPhase }: 
     <Modal open={open} onClose={onClose} title="Agregar partido">
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
-          <label className="mb-1 block text-sm text-ink-500">Fase</label>
+          <label className="mb-1 block text-sm text-on-surface-variant">Fase</label>
           <input
             value={phase}
             onChange={(e) => setPhase(e.target.value)}
             placeholder="Fase 1"
-            className="w-full rounded-lg border border-surface-300 bg-surface-0 px-3 py-2 text-ink-900 outline-none focus:border-brand-500"
+            className="w-full rounded-lg border border-white/15 bg-surface-container-low px-3 py-2 text-on-surface outline-none focus:border-primary-container"
           />
         </div>
 
         <div className="grid grid-cols-2 gap-3">
           <div>
-            <label className="mb-1 block text-sm text-ink-500">Local</label>
+            <label className="mb-1 block text-sm text-on-surface-variant">Local</label>
             <select
               value={homeTeamId}
               onChange={(e) => setHomeTeamId(e.target.value)}
-              className="w-full rounded-lg border border-surface-300 bg-surface-0 px-3 py-2 text-ink-900 outline-none focus:border-brand-500"
+              className="w-full rounded-lg border border-white/15 bg-surface-container-low px-3 py-2 text-on-surface outline-none focus:border-primary-container"
             >
               {teams.map((t) => (
                 <option key={t.id} value={t.id}>
@@ -83,11 +83,11 @@ export function AddMatchModal({ open, onClose, onSubmit, teams, defaultPhase }: 
             </select>
           </div>
           <div>
-            <label className="mb-1 block text-sm text-ink-500">Visitante</label>
+            <label className="mb-1 block text-sm text-on-surface-variant">Visitante</label>
             <select
               value={awayTeamId}
               onChange={(e) => setAwayTeamId(e.target.value)}
-              className="w-full rounded-lg border border-surface-300 bg-surface-0 px-3 py-2 text-ink-900 outline-none focus:border-brand-500"
+              className="w-full rounded-lg border border-white/15 bg-surface-container-low px-3 py-2 text-on-surface outline-none focus:border-primary-container"
             >
               {teams.map((t) => (
                 <option key={t.id} value={t.id}>
@@ -99,12 +99,12 @@ export function AddMatchModal({ open, onClose, onSubmit, teams, defaultPhase }: 
         </div>
 
         <div>
-          <label className="mb-1 block text-sm text-ink-500">Fecha y hora (opcional)</label>
+          <label className="mb-1 block text-sm text-on-surface-variant">Fecha y hora (opcional)</label>
           <input
             type="datetime-local"
             value={scheduledAt}
             onChange={(e) => setScheduledAt(e.target.value)}
-            className="w-full rounded-lg border border-surface-300 bg-surface-0 px-3 py-2 text-ink-900 outline-none focus:border-brand-500"
+            className="w-full rounded-lg border border-white/15 bg-surface-container-low px-3 py-2 text-on-surface outline-none focus:border-primary-container"
           />
         </div>
 
@@ -118,7 +118,7 @@ export function AddMatchModal({ open, onClose, onSubmit, teams, defaultPhase }: 
             {saving ? 'Guardando…' : 'Agregar partido'}
           </Button>
         </div>
-        {teams.length < 2 && <p className="text-xs text-ink-400">Necesitás al menos 2 equipos cargados.</p>}
+        {teams.length < 2 && <p className="text-xs text-on-surface-variant">Necesitás al menos 2 equipos cargados.</p>}
       </form>
     </Modal>
   );

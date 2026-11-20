@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
-import { FiLoader, FiSearch, FiShield } from 'react-icons/fi';
+import { Icon } from '../common/Icon';
 import { Button } from '../common/Button';
 import { Modal } from '../common/Modal';
 import { isSupabaseConfigured } from '../../lib/supabase/client';
@@ -89,23 +89,23 @@ export function TeamFormModal({ open, onClose, onSubmit, initial, players }: Pro
     <Modal open={open} onClose={onClose} title={initial ? 'Editar equipo' : 'Nuevo equipo'} width="max-w-2xl">
       <form onSubmit={handleSubmit} className="space-y-4">
         <div className="flex items-center gap-4">
-          <div className="flex h-16 w-16 items-center justify-center overflow-hidden rounded-full border border-surface-300 bg-surface-100 text-2xl text-ink-400">
+          <div className="flex h-16 w-16 items-center justify-center overflow-hidden rounded-full border border-white/15 bg-surface-container text-2xl text-on-surface-variant">
             {uploadingLogo ? (
-              <FiLoader className="animate-spin text-xl text-brand-400" />
+              <Icon name="progress_activity" className="animate-spin text-xl text-primary-fixed-dim" />
             ) : form.logoUrl ? (
               <img src={form.logoUrl} alt="" className="h-full w-full object-cover" />
             ) : (
-              <FiShield />
+              <Icon name="shield" />
             )}
           </div>
           <label className="text-sm">
-            <span className="mb-1 block text-ink-500">Logo (opcional)</span>
+            <span className="mb-1 block text-on-surface-variant">Logo (opcional)</span>
             <input
               type="file"
               accept="image/*"
               onChange={handleLogo}
               disabled={uploadingLogo}
-              className="text-xs text-ink-500"
+              className="text-xs text-on-surface-variant"
             />
             {logoError && <p className="mt-1 text-xs text-red-600">{logoError}</p>}
           </label>
@@ -113,55 +113,55 @@ export function TeamFormModal({ open, onClose, onSubmit, initial, players }: Pro
 
         <div className="grid grid-cols-[1fr_auto] gap-4">
           <div>
-            <label className="mb-1 block text-sm text-ink-500">Nombre del equipo</label>
+            <label className="mb-1 block text-sm text-on-surface-variant">Nombre del equipo</label>
             <input
               required
               value={form.name}
               onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
-              className="w-full rounded-lg border border-surface-300 bg-surface-0 px-3 py-2 text-ink-900 outline-none focus:border-brand-500"
+              className="w-full rounded-lg border border-white/15 bg-surface-container-low px-3 py-2 text-on-surface outline-none focus:border-primary-container"
             />
           </div>
           <div>
-            <label className="mb-1 block text-sm text-ink-500">Color</label>
+            <label className="mb-1 block text-sm text-on-surface-variant">Color</label>
             <input
               type="color"
               value={form.color}
               onChange={(e) => setForm((f) => ({ ...f, color: e.target.value }))}
-              className="h-[42px] w-14 cursor-pointer rounded-lg border border-surface-300 bg-transparent"
+              className="h-[42px] w-14 cursor-pointer rounded-lg border border-white/15 bg-transparent"
             />
           </div>
         </div>
 
         <div>
           <div className="mb-2 flex items-center justify-between">
-            <span className="text-sm text-ink-500">Plantel</span>
-            <span className="text-xs text-ink-400">{form.playerIds.length} seleccionados</span>
+            <span className="text-sm text-on-surface-variant">Plantel</span>
+            <span className="text-xs text-on-surface-variant">{form.playerIds.length} seleccionados</span>
           </div>
           <div className="relative mb-2">
-            <FiSearch className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-ink-400" />
+            <Icon name="search" className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant" />
             <input
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Buscar jugador…"
-              className="w-full rounded-lg border border-surface-300 bg-surface-0 py-2 pl-9 pr-3 text-sm text-ink-900 outline-none focus:border-brand-500"
+              className="w-full rounded-lg border border-white/15 bg-surface-container-low py-2 pl-9 pr-3 text-sm text-on-surface outline-none focus:border-primary-container"
             />
           </div>
-          <div className="max-h-56 overflow-y-auto rounded-lg border border-surface-200">
+          <div className="max-h-56 overflow-y-auto rounded-lg border border-white/10">
             {filteredPlayers.map((p) => (
               <label
                 key={p.id}
-                className="flex cursor-pointer items-center gap-2 border-b border-surface-100 px-3 py-2 text-sm last:border-0 hover:bg-surface-50"
+                className="flex cursor-pointer items-center gap-2 border-b border-white/10 px-3 py-2 text-sm last:border-0 hover:bg-background"
               >
                 <input
                   type="checkbox"
                   checked={form.playerIds.includes(p.id)}
                   onChange={() => togglePlayer(p.id)}
-                  className="h-4 w-4 accent-brand-500"
+                  className="h-4 w-4 accent-primary-container"
                 />
                 {p.fullName}
               </label>
             ))}
-            {filteredPlayers.length === 0 && <p className="px-3 py-4 text-center text-sm text-ink-400">Sin resultados.</p>}
+            {filteredPlayers.length === 0 && <p className="px-3 py-4 text-center text-sm text-on-surface-variant">Sin resultados.</p>}
           </div>
         </div>
 

@@ -1,17 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
-import {
-  FiCheckCircle,
-  FiChevronLeft,
-  FiChevronRight,
-  FiChevronsLeft,
-  FiEye,
-  FiEyeOff,
-  FiLogOut,
-  FiUser,
-  FiUsers,
-} from 'react-icons/fi';
+import { Icon } from '../../components/common/Icon';
 import { Button } from '../../components/common/Button';
 import { Card } from '../../components/common/Card';
 import { usePlayersStore } from '../../store/usePlayersStore';
@@ -162,13 +152,13 @@ export default function VotacionPage() {
   }
 
   if (!playersLoaded || !votesLoaded) {
-    return <p className="text-sm text-ink-400">Cargando…</p>;
+    return <p className="text-sm text-on-surface-variant">Cargando…</p>;
   }
 
   if (sortedPlayers.length === 0) {
     return (
       <Card>
-        <p className="text-sm text-ink-500">No hay jugadores registrados todavía. Agregalos primero en &quot;Jugadores&quot;.</p>
+        <p className="text-sm text-on-surface-variant">No hay jugadores registrados todavía. Agregalos primero en &quot;Jugadores&quot;.</p>
       </Card>
     );
   }
@@ -176,8 +166,8 @@ export default function VotacionPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="font-display text-2xl font-bold text-ink-900">Votación de niveles</h2>
-        <p className="text-sm text-ink-500">
+        <h2 className="font-display text-2xl font-bold text-on-surface">Votación de niveles</h2>
+        <p className="text-sm text-on-surface-variant">
           Cada votante elige su nombre y califica a cada jugador en las 4 posiciones (1 Excelente a 6 Principiante), no
           solo en la suya. El nivel oficial de cada jugador en cada posición se actualiza solo, con el promedio de los
           votos recibidos hasta el momento.
@@ -186,7 +176,7 @@ export default function VotacionPage() {
 
       {!voterId ? (
         <Card>
-          <p className="mb-4 text-sm font-medium text-ink-700">¿Quién sos?</p>
+          <p className="mb-4 text-sm font-medium text-on-surface">¿Quién sos?</p>
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
             {VOTERS.map((voter) => {
               const count = sortedPlayers.filter((p) => hasVotedAllPositions((votesByPlayer.get(p.id) ?? {})[voter.id])).length;
@@ -194,13 +184,13 @@ export default function VotacionPage() {
                 <button
                   key={voter.id}
                   onClick={() => pickVoter(voter.id)}
-                  className="flex flex-col items-center gap-2 rounded-xl border border-surface-300 bg-surface-0 px-3 py-4 text-center transition hover:border-brand-500 hover:bg-brand-500/5"
+                  className="flex flex-col items-center gap-2 rounded-xl border border-white/15 bg-surface-container-low px-3 py-4 text-center transition hover:border-primary-container hover:bg-primary-container/5"
                 >
-                  <span className="flex h-11 w-11 items-center justify-center rounded-full bg-surface-100 text-lg text-brand-600">
-                    <FiUser />
+                  <span className="flex h-11 w-11 items-center justify-center rounded-full bg-surface-container text-lg text-primary-fixed-dim">
+                    <Icon name="person" />
                   </span>
-                  <span className="font-display text-sm font-semibold text-ink-900">{voter.name}</span>
-                  <span className="text-xs text-ink-400">{count}/{sortedPlayers.length} votados</span>
+                  <span className="font-display text-sm font-semibold text-on-surface">{voter.name}</span>
+                  <span className="text-xs text-on-surface-variant">{count}/{sortedPlayers.length} votados</span>
                 </button>
               );
             })}
@@ -209,53 +199,53 @@ export default function VotacionPage() {
       ) : index >= sortedPlayers.length ? (
         <Card className="flex flex-col items-center gap-4 py-10 text-center">
           <span className="flex h-16 w-16 items-center justify-center rounded-full bg-green-50 text-3xl text-green-600">
-            <FiCheckCircle />
+            <Icon name="check_circle" />
           </span>
           <div>
-            <p className="font-display text-xl font-bold text-ink-900">¡Listo, {VOTERS.find((v) => v.id === voterId)?.name}!</p>
-            <p className="mt-1 text-sm text-ink-500">
+            <p className="font-display text-xl font-bold text-on-surface">¡Listo, {VOTERS.find((v) => v.id === voterId)?.name}!</p>
+            <p className="mt-1 text-sm text-on-surface-variant">
               Votaste {votedByMeCount} de {sortedPlayers.length} jugadores.
             </p>
           </div>
           <div className="flex flex-wrap justify-center gap-2">
             <Button variant="secondary" onClick={() => setIndex(0)}>
-              <FiChevronsLeft /> Revisar mis votos
+              <Icon name="keyboard_double_arrow_left" /> Revisar mis votos
             </Button>
             <Button onClick={changeVoter}>
-              <FiLogOut /> Cambiar de votante
+              <Icon name="logout" /> Cambiar de votante
             </Button>
           </div>
         </Card>
       ) : (
         <Card className="flex flex-col items-center gap-5 py-8 text-center">
-          <div className="flex w-full items-center justify-between text-xs text-ink-400">
-            <span className="inline-flex items-center gap-1.5 rounded-full bg-surface-100 px-2.5 py-1 font-medium text-ink-700">
-              <FiUser /> {VOTERS.find((v) => v.id === voterId)?.name}
+          <div className="flex w-full items-center justify-between text-xs text-on-surface-variant">
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-surface-container px-2.5 py-1 font-medium text-on-surface">
+              <Icon name="person" /> {VOTERS.find((v) => v.id === voterId)?.name}
             </span>
-            <button onClick={changeVoter} className="underline hover:text-ink-700">
+            <button onClick={changeVoter} className="underline hover:text-on-surface">
               Cambiar votante
             </button>
           </div>
 
           <div className="w-full">
-            <div className="h-1.5 w-full overflow-hidden rounded-full bg-surface-200">
+            <div className="h-1.5 w-full overflow-hidden rounded-full bg-surface-container-high">
               <div
-                className="h-full rounded-full bg-brand-500 transition-all"
+                className="h-full rounded-full bg-primary-container transition-all"
                 style={{ width: `${(index / sortedPlayers.length) * 100}%` }}
               />
             </div>
-            <p className="mt-2 text-xs text-ink-400">
+            <p className="mt-2 text-xs text-on-surface-variant">
               Jugador {index + 1} de {sortedPlayers.length} · {votedByMeCount} votados
             </p>
           </div>
 
-          <p className="font-display text-2xl font-bold text-ink-900">{sortedPlayers[index].fullName}</p>
-          <p className="-mt-3 text-[11px] text-ink-400">1 Excelente · 2 Muy bueno · 3 Bueno · 4 Regular · 5 Flojo · 6 Principiante</p>
+          <p className="font-display text-2xl font-bold text-on-surface">{sortedPlayers[index].fullName}</p>
+          <p className="-mt-3 text-[11px] text-on-surface-variant">1 Excelente · 2 Muy bueno · 3 Bueno · 4 Regular · 5 Flojo · 6 Principiante</p>
 
           <div className="w-full space-y-3">
             {POSITIONS.map((position) => (
               <div key={position}>
-                <p className="mb-1 text-left text-xs font-medium text-ink-500">{POSITION_LABELS[position]}</p>
+                <p className="mb-1 text-left text-xs font-medium text-on-surface-variant">{POSITION_LABELS[position]}</p>
                 <div className="grid grid-cols-6 gap-1.5">
                   {SKILL_LEVELS.map((level) => {
                     const active = draft[position] === level;
@@ -265,8 +255,8 @@ export default function VotacionPage() {
                         onClick={() => vote(position, level)}
                         className={`rounded-lg border py-2.5 text-sm font-semibold transition ${
                           active
-                            ? 'border-brand-500 bg-brand-500 text-white shadow-sm shadow-brand-500/30'
-                            : 'border-surface-300 bg-surface-0 text-ink-900 hover:border-brand-400'
+                            ? 'border-primary-container bg-primary-container text-white shadow-sm shadow-brand-500/30'
+                            : 'border-white/15 bg-surface-container-low text-on-surface hover:border-primary-fixed-dim'
                         }`}
                       >
                         {level}
@@ -280,10 +270,10 @@ export default function VotacionPage() {
 
           <div className="flex w-full items-center justify-between pt-2">
             <Button variant="ghost" disabled={index === 0} onClick={() => setIndex((i) => Math.max(0, i - 1))}>
-              <FiChevronLeft /> Anterior
+              <Icon name="chevron_left" /> Anterior
             </Button>
             <Button onClick={() => setIndex((i) => Math.min(sortedPlayers.length, i + 1))}>
-              Siguiente <FiChevronRight />
+              Siguiente <Icon name="chevron_right" />
             </Button>
           </div>
         </Card>
@@ -291,12 +281,12 @@ export default function VotacionPage() {
 
       <div className="flex flex-col gap-3">
         <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-          <div className="flex items-center gap-2 rounded-lg border border-surface-200 bg-surface-0 px-3 py-2 text-sm text-ink-700">
-            <FiUsers className="text-brand-600" />
+          <div className="flex items-center gap-2 rounded-lg border border-white/10 bg-surface-container-low px-3 py-2 text-sm text-on-surface">
+            <Icon name="group" className="text-primary-fixed-dim" />
             {fullyVotedCount} de {sortedPlayers.length} jugadores con los 8 votos completos
           </div>
           <Button variant="secondary" onClick={() => setShowTable((s) => !s)}>
-            {showTable ? <FiEyeOff /> : <FiEye />} {showTable ? 'Ocultar resumen' : 'Ver resumen de todos'}
+            {showTable ? <Icon name="visibility_off" /> : <Icon name="visibility" />} {showTable ? 'Ocultar resumen' : 'Ver resumen de todos'}
           </Button>
         </div>
 
@@ -311,8 +301,8 @@ export default function VotacionPage() {
                 <col className="w-16" />
               </colgroup>
               <thead>
-                <tr className="border-b border-surface-200 text-left text-xs text-ink-400">
-                  <th className="sticky left-0 z-10 bg-surface-0 px-3 py-3">Jugador</th>
+                <tr className="border-b border-white/10 text-left text-xs text-on-surface-variant">
+                  <th className="sticky left-0 z-10 bg-surface-container-low px-3 py-3">Jugador</th>
                   {POSITIONS.map((position) => (
                     <th key={position} className="px-1 py-3 text-center font-medium" title={POSITION_LABELS[position]}>
                       {POSITION_SHORT[position]}
@@ -326,8 +316,8 @@ export default function VotacionPage() {
                   const playerVotes = votesByPlayer.get(player.id) ?? {};
                   const completedVoters = VOTERS.filter((voter) => hasVotedAllPositions(playerVotes[voter.id])).length;
                   return (
-                    <tr key={player.id} className="border-b border-surface-200 last:border-0 hover:bg-surface-50">
-                      <td className="sticky left-0 z-10 bg-surface-0 px-3 py-2 font-medium text-ink-900">{player.fullName}</td>
+                    <tr key={player.id} className="border-b border-white/10 last:border-0 hover:bg-background">
+                      <td className="sticky left-0 z-10 bg-surface-container-low px-3 py-2 font-medium text-on-surface">{player.fullName}</td>
                       {POSITIONS.map((position) => (
                         <td key={position} className="px-1 py-2 text-center">
                           <span className={`text-xs font-semibold ${LEVEL_TEXT_COLORS[player.positionLevels[position]]}`}>
@@ -335,7 +325,7 @@ export default function VotacionPage() {
                           </span>
                         </td>
                       ))}
-                      <td className="px-2 py-2 text-center text-xs text-ink-500">{completedVoters}/8</td>
+                      <td className="px-2 py-2 text-center text-xs text-on-surface-variant">{completedVoters}/8</td>
                     </tr>
                   );
                 })}

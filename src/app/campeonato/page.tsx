@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { FiCheckCircle, FiAlertTriangle, FiSave } from 'react-icons/fi';
+import { Icon } from '../../components/common/Icon';
 import { Button } from '../../components/common/Button';
 import { Card, CardTitle } from '../../components/common/Card';
 import { checkFeasibility, computeSlots } from '../../lib/algorithms/teamValidation';
@@ -35,8 +35,8 @@ export default function CampeonatoConfigPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="font-display text-2xl font-bold text-ink-900">Configuración del campeonato</h2>
-        <p className="text-sm text-ink-500">
+        <h2 className="font-display text-2xl font-bold text-on-surface">Configuración del campeonato</h2>
+        <p className="text-sm text-on-surface-variant">
           El campeonato siempre arma {config.numberOfTeams} equipos. Definí cuántos jugadores de cada posición
           lleva cada equipo.
         </p>
@@ -47,7 +47,7 @@ export default function CampeonatoConfigPage() {
         <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {POSITIONS.map((position) => (
             <div key={position}>
-              <label className="mb-1 block text-sm text-ink-500">{POSITION_LABELS[position]}</label>
+              <label className="mb-1 block text-sm text-on-surface-variant">{POSITION_LABELS[position]}</label>
               <input
                 type="number"
                 min={0}
@@ -56,25 +56,25 @@ export default function CampeonatoConfigPage() {
                 onChange={(e) =>
                   setFormation((f) => ({ ...f, [position]: Math.max(0, Number(e.target.value) || 0) }))
                 }
-                className="w-full rounded-lg border border-surface-300 bg-surface-0 px-3 py-2 text-ink-900 outline-none focus:border-brand-500"
+                className="w-full rounded-lg border border-white/15 bg-surface-container-low px-3 py-2 text-on-surface outline-none focus:border-primary-container"
               />
-              <p className="mt-1 text-xs text-ink-400">
+              <p className="mt-1 text-xs text-on-surface-variant">
                 {formation[position] * config.numberOfTeams} jugadores necesarios en total
               </p>
             </div>
           ))}
         </div>
 
-        <div className="mt-6 flex flex-wrap items-center justify-between gap-4 rounded-xl border border-surface-200 bg-surface-50 p-4">
-          <div className="text-sm text-ink-700">
+        <div className="mt-6 flex flex-wrap items-center justify-between gap-4 rounded-xl border border-white/10 bg-background p-4">
+          <div className="text-sm text-on-surface">
             <p>
-              <span className="font-semibold text-ink-900">{playersPerTeam}</span> jugadores por equipo ×{' '}
-              <span className="font-semibold text-ink-900">{config.numberOfTeams}</span> equipos ={' '}
-              <span className="font-semibold text-brand-600">{totalNeeded}</span> jugadores necesarios
+              <span className="font-semibold text-on-surface">{playersPerTeam}</span> jugadores por equipo ×{' '}
+              <span className="font-semibold text-on-surface">{config.numberOfTeams}</span> equipos ={' '}
+              <span className="font-semibold text-primary-fixed-dim">{totalNeeded}</span> jugadores necesarios
             </p>
           </div>
           <Button onClick={handleSave}>
-            {saved ? <FiCheckCircle /> : <FiSave />} {saved ? 'Guardado' : 'Guardar configuración'}
+            {saved ? <Icon name="check_circle" /> : <Icon name="save" />} {saved ? 'Guardado' : 'Guardar configuración'}
           </Button>
         </div>
       </Card>
@@ -83,11 +83,11 @@ export default function CampeonatoConfigPage() {
         <CardTitle>Validación con los jugadores actuales</CardTitle>
         <div className="mt-3 flex items-start gap-3">
           {feasibility.ok ? (
-            <FiCheckCircle className="mt-1 text-brand-600" />
+            <Icon name="check_circle" className="mt-1 text-primary-fixed-dim" />
           ) : (
-            <FiAlertTriangle className="mt-1 text-gray-600" />
+            <Icon name="warning" className="mt-1 text-gray-600" />
           )}
-          <div className="text-sm text-ink-700">
+          <div className="text-sm text-on-surface">
             {feasibility.ok ? (
               <p>Hay suficientes jugadores disponibles para esta formación.</p>
             ) : (
@@ -106,10 +106,10 @@ export default function CampeonatoConfigPage() {
             )}
           </div>
         </div>
-        <div className="mt-4 grid grid-cols-2 gap-2 text-xs text-ink-500 sm:grid-cols-4">
+        <div className="mt-4 grid grid-cols-2 gap-2 text-xs text-on-surface-variant sm:grid-cols-4">
           {POSITIONS.map((p) => (
-            <div key={p} className="rounded-lg border border-surface-200 px-3 py-2">
-              {POSITION_LABELS[p]}: <span className="text-ink-900">{slots[p]}</span> plazas
+            <div key={p} className="rounded-lg border border-white/10 px-3 py-2">
+              {POSITION_LABELS[p]}: <span className="text-on-surface">{slots[p]}</span> plazas
             </div>
           ))}
         </div>

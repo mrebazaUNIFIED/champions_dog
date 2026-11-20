@@ -1,7 +1,7 @@
 'use client';
 
 import { useMemo } from 'react';
-import { FiX } from 'react-icons/fi';
+import { Icon } from '../common/Icon';
 import { Button } from '../common/Button';
 import { Modal } from '../common/Modal';
 import { usePlayersStore } from '../../store/usePlayersStore';
@@ -66,23 +66,23 @@ export function MatchDetailModal({ matchId, onClose }: Props) {
     const lineup = side === 'home' ? match!.homeLineup : match!.awayLineup;
     return (
       <div className="flex-1 space-y-2">
-        <p className="font-display text-lg text-ink-900">{team.name}</p>
+        <p className="font-display text-lg text-on-surface">{team.name}</p>
         <div className="space-y-1">
           {team.playerIds.map((playerId) => {
             const goals = match!.events.filter((e) => e.playerId === playerId && e.type === 'goal').length;
             const yellow = match!.events.filter((e) => e.playerId === playerId && e.type === 'yellow').length;
             const red = match!.events.filter((e) => e.playerId === playerId && e.type === 'red').length;
             return (
-              <div key={playerId} className="flex items-center gap-2 rounded-lg border border-surface-200 px-2 py-1.5 text-sm">
+              <div key={playerId} className="flex items-center gap-2 rounded-lg border border-white/10 px-2 py-1.5 text-sm">
                 <input
                   type="checkbox"
                   checked={lineup.includes(playerId)}
                   onChange={() => toggleLineup(side, playerId)}
-                  className="h-4 w-4 shrink-0 accent-brand-500"
+                  className="h-4 w-4 shrink-0 accent-primary-container"
                   title="Titular"
                 />
-                <span className="min-w-0 flex-1 truncate text-ink-900">{playerName(playerId)}</span>
-                <div className="flex shrink-0 items-center gap-1.5 text-xs text-ink-500">
+                <span className="min-w-0 flex-1 truncate text-on-surface">{playerName(playerId)}</span>
+                <div className="flex shrink-0 items-center gap-1.5 text-xs text-on-surface-variant">
                   {goals > 0 && <span>⚽ {goals}</span>}
                   {yellow > 0 && <span className="text-gray-600">🟨 {yellow}</span>}
                   {red > 0 && <span className="text-red-600">🟥 {red}</span>}
@@ -113,7 +113,7 @@ export function MatchDetailModal({ matchId, onClose }: Props) {
               </div>
             );
           })}
-          {team.playerIds.length === 0 && <p className="text-xs text-ink-400">Este equipo todavía no tiene plantel cargado.</p>}
+          {team.playerIds.length === 0 && <p className="text-xs text-on-surface-variant">Este equipo todavía no tiene plantel cargado.</p>}
         </div>
       </div>
     );
@@ -128,7 +128,7 @@ export function MatchDetailModal({ matchId, onClose }: Props) {
               key={status}
               onClick={() => void updateMatch(match.id, { status })}
               className={`rounded-full px-3 py-1 text-xs font-semibold transition ${
-                match.status === status ? 'bg-ink-900 text-white' : 'bg-surface-100 text-ink-500 hover:bg-surface-200'
+                match.status === status ? 'bg-ink-900 text-white' : 'bg-surface-container text-on-surface-variant hover:bg-surface-container-high'
               }`}
             >
               {MATCH_STATUS_LABELS[status]}
@@ -137,11 +137,11 @@ export function MatchDetailModal({ matchId, onClose }: Props) {
         </div>
 
         <div className="flex items-center justify-center gap-6">
-          <p className="flex-1 text-right font-display text-xl text-ink-900">{homeTeam.name}</p>
-          <p className="font-display text-4xl text-ink-900">
+          <p className="flex-1 text-right font-display text-xl text-on-surface">{homeTeam.name}</p>
+          <p className="font-display text-4xl text-on-surface">
             {score.home} — {score.away}
           </p>
-          <p className="flex-1 font-display text-xl text-ink-900">{awayTeam.name}</p>
+          <p className="flex-1 font-display text-xl text-on-surface">{awayTeam.name}</p>
         </div>
 
         <div className="flex flex-col gap-4 sm:flex-row">
@@ -150,18 +150,18 @@ export function MatchDetailModal({ matchId, onClose }: Props) {
         </div>
 
         <div>
-          <p className="mb-2 text-sm font-medium text-ink-700">Jugadas del partido</p>
-          <div className="max-h-40 space-y-1 overflow-y-auto rounded-lg border border-surface-200 p-2">
-            {feed.length === 0 && <p className="text-xs text-ink-400">Todavía no hay jugadas.</p>}
+          <p className="mb-2 text-sm font-medium text-on-surface">Jugadas del partido</p>
+          <div className="max-h-40 space-y-1 overflow-y-auto rounded-lg border border-white/10 p-2">
+            {feed.length === 0 && <p className="text-xs text-on-surface-variant">Todavía no hay jugadas.</p>}
             {feed.map((event) => (
-              <div key={event.id} className="flex items-center justify-between gap-2 text-sm text-ink-700">
+              <div key={event.id} className="flex items-center justify-between gap-2 text-sm text-on-surface">
                 <span>{eventLabel(event, playerName(event.playerId))}</span>
                 <button
                   onClick={() => void removeEvent(match.id, event.id)}
-                  className="text-ink-300 hover:text-red-500"
+                  className="text-on-surface-variant hover:text-red-500"
                   aria-label="Quitar jugada"
                 >
-                  <FiX />
+                  <Icon name="close" />
                 </button>
               </div>
             ))}

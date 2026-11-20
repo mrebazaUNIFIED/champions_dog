@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { FiAward, FiPlus, FiTrash2 } from 'react-icons/fi';
+import { Icon } from '../../components/common/Icon';
 import { Button } from '../../components/common/Button';
 import { Card, CardTitle } from '../../components/common/Card';
 import { useAwardsStore } from '../../store/useAwardsStore';
@@ -68,8 +68,8 @@ export default function RankingsPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="font-display text-2xl font-bold text-ink-900">Rankings</h2>
-        <p className="text-sm text-ink-500">Goleadores, sanciones y premios del torneo.</p>
+        <h2 className="font-display text-2xl font-bold text-on-surface">Rankings</h2>
+        <p className="text-sm text-on-surface-variant">Goleadores, sanciones y premios del torneo.</p>
       </div>
 
       <div className="grid gap-6 lg:grid-cols-2">
@@ -77,16 +77,16 @@ export default function RankingsPage() {
           <div className="p-5 pb-0">
             <CardTitle>Goleadores</CardTitle>
           </div>
-          <div className="mt-3 divide-y divide-surface-200">
-            {scorers.length === 0 && <p className="px-5 py-6 text-sm text-ink-400">Todavía no hay goles cargados.</p>}
+          <div className="mt-3 divide-y divide-white/10">
+            {scorers.length === 0 && <p className="px-5 py-6 text-sm text-on-surface-variant">Todavía no hay goles cargados.</p>}
             {scorers.map((s, i) => (
               <div key={s.playerId} className="flex items-center gap-3 px-5 py-3">
-                <span className="w-5 text-sm font-semibold text-ink-400">{i + 1}</span>
+                <span className="w-5 text-sm font-semibold text-on-surface-variant">{i + 1}</span>
                 <div className="min-w-0 flex-1">
-                  <p className="truncate text-sm font-medium text-ink-900">{playerName(s.playerId)}</p>
-                  <p className="text-xs text-ink-400">{teamName(s.teamId)}</p>
+                  <p className="truncate text-sm font-medium text-on-surface">{playerName(s.playerId)}</p>
+                  <p className="text-xs text-on-surface-variant">{teamName(s.teamId)}</p>
                 </div>
-                <p className="font-display text-xl text-ink-900">{s.count}</p>
+                <p className="font-display text-xl text-on-surface">{s.count}</p>
               </div>
             ))}
           </div>
@@ -96,13 +96,13 @@ export default function RankingsPage() {
           <div className="p-5 pb-0">
             <CardTitle>Sanciones</CardTitle>
           </div>
-          <div className="mt-3 divide-y divide-surface-200">
-            {cards.length === 0 && <p className="px-5 py-6 text-sm text-ink-400">Todavía no hay tarjetas cargadas.</p>}
+          <div className="mt-3 divide-y divide-white/10">
+            {cards.length === 0 && <p className="px-5 py-6 text-sm text-on-surface-variant">Todavía no hay tarjetas cargadas.</p>}
             {cards.map((c) => (
               <div key={c.playerId} className="flex items-center gap-3 px-5 py-3">
                 <div className="min-w-0 flex-1">
-                  <p className="truncate text-sm font-medium text-ink-900">{playerName(c.playerId)}</p>
-                  <p className="text-xs text-ink-400">{teamName(c.teamId)}</p>
+                  <p className="truncate text-sm font-medium text-on-surface">{playerName(c.playerId)}</p>
+                  <p className="text-xs text-on-surface-variant">{teamName(c.teamId)}</p>
                 </div>
                 <div className="flex shrink-0 gap-2 text-sm">
                   {c.yellow > 0 && (
@@ -118,7 +118,7 @@ export default function RankingsPage() {
 
       <Card>
         <CardTitle>Premios</CardTitle>
-        <p className="mt-1 text-sm text-ink-500">MVP y cualquier otro reconocimiento del torneo.</p>
+        <p className="mt-1 text-sm text-on-surface-variant">MVP y cualquier otro reconocimiento del torneo.</p>
 
         <form onSubmit={handleAddAward} className="mt-4 grid gap-3 sm:grid-cols-[1fr_1fr_1fr_auto]">
           <input
@@ -126,37 +126,37 @@ export default function RankingsPage() {
             onChange={(e) => setTitle(e.target.value)}
             placeholder="Título (ej. MVP del torneo)"
             required
-            className="rounded-lg border border-surface-300 bg-surface-0 px-3 py-2 text-sm text-ink-900 outline-none focus:border-brand-500"
+            className="rounded-lg border border-white/15 bg-surface-container-low px-3 py-2 text-sm text-on-surface outline-none focus:border-primary-container"
           />
           <input
             value={winnerName}
             onChange={(e) => setWinnerName(e.target.value)}
             placeholder="Ganador"
-            className="rounded-lg border border-surface-300 bg-surface-0 px-3 py-2 text-sm text-ink-900 outline-none focus:border-brand-500"
+            className="rounded-lg border border-white/15 bg-surface-container-low px-3 py-2 text-sm text-on-surface outline-none focus:border-primary-container"
           />
           <input
             value={note}
             onChange={(e) => setNote(e.target.value)}
             placeholder="Nota (opcional)"
-            className="rounded-lg border border-surface-300 bg-surface-0 px-3 py-2 text-sm text-ink-900 outline-none focus:border-brand-500"
+            className="rounded-lg border border-white/15 bg-surface-container-low px-3 py-2 text-sm text-on-surface outline-none focus:border-primary-container"
           />
           <Button type="submit">
-            <FiPlus /> Agregar
+            <Icon name="add" /> Agregar
           </Button>
         </form>
 
         <div className="mt-4 space-y-2">
-          {awards.length === 0 && <p className="text-sm text-ink-400">Todavía no cargaste ningún premio.</p>}
+          {awards.length === 0 && <p className="text-sm text-on-surface-variant">Todavía no cargaste ningún premio.</p>}
           {awards.map((a) => (
-            <div key={a.id} className="flex items-center justify-between gap-3 rounded-lg border border-surface-200 px-3 py-2">
+            <div key={a.id} className="flex items-center justify-between gap-3 rounded-lg border border-white/10 px-3 py-2">
               <div className="flex items-center gap-2">
-                <FiAward className="text-gold-500" />
+                <Icon name="military_tech" className="text-tertiary-fixed-dim" />
                 <div>
-                  <p className="text-sm font-medium text-ink-900">
+                  <p className="text-sm font-medium text-on-surface">
                     {a.title}
                     {a.winnerName ? ` — ${a.winnerName}` : ''}
                   </p>
-                  {a.note && <p className="text-xs text-ink-400">{a.note}</p>}
+                  {a.note && <p className="text-xs text-on-surface-variant">{a.note}</p>}
                 </div>
               </div>
               <button
@@ -164,7 +164,7 @@ export default function RankingsPage() {
                 className="rounded-lg p-2 text-red-400 hover:bg-red-50 hover:text-red-600"
                 aria-label="Eliminar"
               >
-                <FiTrash2 />
+                <Icon name="delete" />
               </button>
             </div>
           ))}

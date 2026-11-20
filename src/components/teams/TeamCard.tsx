@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { FiCheck, FiAward, FiRepeat, FiTrendingDown, FiUsers } from 'react-icons/fi';
+import { Icon } from '../common/Icon';
 import { TeamBadge } from '../common/TeamBadge';
 import { PositionBadge, SkillBadge } from '../common/Badges';
 import type { Player, Team, TeamStats } from '../../types';
@@ -40,14 +40,14 @@ export function TeamCard({
 
   return (
     <div
-      className="flex flex-col overflow-hidden rounded-2xl border bg-surface-0 shadow-sm transition-shadow"
+      className="flex flex-col overflow-hidden rounded-2xl border bg-surface-container-low shadow-sm transition-shadow"
       style={{
         borderColor: isStrongest ? `${color}70` : 'var(--color-surface-200)',
         boxShadow: isStrongest ? `0 0 0 1px ${color}30, 0 12px 24px -16px ${color}60` : undefined,
       }}
     >
       <div
-        className="relative flex items-center justify-between gap-2 overflow-hidden border-b border-surface-200 px-5 py-4"
+        className="relative flex items-center justify-between gap-2 overflow-hidden border-b border-white/10 px-5 py-4"
         style={{ background: `linear-gradient(135deg, ${team.color}14, transparent 80%)` }}
       >
         <div className="relative flex items-center gap-3">
@@ -72,7 +72,7 @@ export function TeamCard({
                     setEditingName(false);
                   }
                 }}
-                className="w-28 rounded border border-surface-300 bg-surface-0 px-2 py-1 text-sm text-ink-900 outline-none"
+                className="w-28 rounded border border-white/15 bg-surface-container-low px-2 py-1 text-sm text-on-surface outline-none"
               />
               <button
                 type="button"
@@ -80,25 +80,25 @@ export function TeamCard({
                 className="rounded bg-ink-900 p-1.5 text-white hover:bg-ink-700"
                 aria-label="Confirmar"
               >
-                <FiCheck className="text-xs" />
+                <Icon name="check" className="text-xs" />
               </button>
             </div>
           ) : (
             <button className="text-left" onClick={() => setEditingName(true)}>
-              <p className="font-display text-base font-bold tracking-wide text-ink-900">{team.name}</p>
-              <p className="text-[11px] text-ink-400">Click para renombrar</p>
+              <p className="font-display text-base font-bold tracking-wide text-on-surface">{team.name}</p>
+              <p className="text-[11px] text-on-surface-variant">Click para renombrar</p>
             </button>
           )}
         </div>
         <div className="relative flex flex-col items-end gap-1">
           {isStrongest && (
             <span className="flex items-center gap-1 rounded-full bg-ink-900 px-2.5 py-1 text-[10px] font-bold text-white shadow">
-              <FiAward className="text-gold-400" /> MÁS FUERTE
+              <Icon name="military_tech" className="text-tertiary-fixed-dim" /> MÁS FUERTE
             </span>
           )}
           {isWeakest && (
-            <span className="flex items-center gap-1 rounded-full border border-surface-300 bg-surface-0 px-2.5 py-1 text-[10px] font-semibold text-ink-500">
-              <FiTrendingDown /> MÁS DÉBIL
+            <span className="flex items-center gap-1 rounded-full border border-white/15 bg-surface-container-low px-2.5 py-1 text-[10px] font-semibold text-on-surface-variant">
+              <Icon name="trending_down" /> MÁS DÉBIL
             </span>
           )}
         </div>
@@ -114,7 +114,7 @@ export function TeamCard({
             <div
               key={assigned.player.id}
               className={`flex items-center justify-between gap-2 rounded-lg px-2 py-2 transition ${
-                isSelected ? 'bg-green-50 ring-1 ring-green-300' : 'hover:bg-surface-50'
+                isSelected ? 'bg-green-50 ring-1 ring-green-300' : 'hover:bg-background'
               }`}
             >
               <button
@@ -122,9 +122,9 @@ export function TeamCard({
                 className="flex flex-1 items-center gap-2 text-left"
                 title="Seleccionar para intercambiar"
               >
-                <FiRepeat className={`text-xs ${isSelected ? 'text-brand-600' : 'text-ink-400'}`} />
+                <Icon name="sync_alt" className={`text-xs ${isSelected ? 'text-primary-fixed-dim' : 'text-on-surface-variant'}`} />
                 <div className="min-w-0 flex-1">
-                  <p className="truncate text-sm font-medium text-ink-900">{assigned.player.fullName}</p>
+                  <p className="truncate text-sm font-medium text-on-surface">{assigned.player.fullName}</p>
                   <div className="mt-0.5 flex flex-wrap gap-1">
                     <PositionBadge position={assigned.assignedPosition} />
                     <SkillBadge level={assigned.player.positionLevels[assigned.assignedPosition]} />
@@ -133,7 +133,7 @@ export function TeamCard({
               </button>
               <div className="flex shrink-0 flex-col items-end gap-1">
                 <span
-                  className="flex h-6 min-w-6 items-center justify-center rounded-full border border-surface-300 bg-surface-100 px-1.5 text-xs font-bold text-ink-900"
+                  className="flex h-6 min-w-6 items-center justify-center rounded-full border border-white/15 bg-surface-container px-1.5 text-xs font-bold text-on-surface"
                   title="Puntaje"
                 >
                   {assigned.score}
@@ -145,7 +145,7 @@ export function TeamCard({
                       if (e.target.value) onReplace(assigned.player.id, e.target.value);
                       e.target.value = '';
                     }}
-                    className="rounded border border-surface-300 bg-surface-0 px-1 py-0.5 text-[10px] text-ink-500"
+                    className="rounded border border-white/15 bg-surface-container-low px-1 py-0.5 text-[10px] text-on-surface-variant"
                   >
                     <option value="" disabled>
                       Cambiar…
@@ -163,13 +163,13 @@ export function TeamCard({
         })}
       </div>
 
-      <div className="flex items-center justify-between border-t border-surface-200 bg-surface-50 px-4 py-3 text-xs text-ink-500">
+      <div className="flex items-center justify-between border-t border-white/10 bg-background px-4 py-3 text-xs text-on-surface-variant">
         <span className="flex items-center gap-1.5">
-          <FiUsers /> {team.players.length} jugadores
+          <Icon name="group" /> {team.players.length} jugadores
         </span>
         <span>
-          Total: <span className="font-bold text-ink-900">{stats.totalScore}</span> · Prom:{' '}
-          <span className="font-bold text-ink-900">{stats.averageScore.toFixed(1)}</span>
+          Total: <span className="font-bold text-on-surface">{stats.totalScore}</span> · Prom:{' '}
+          <span className="font-bold text-on-surface">{stats.averageScore.toFixed(1)}</span>
         </span>
       </div>
     </div>

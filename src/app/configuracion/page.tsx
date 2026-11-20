@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { FiCheckCircle, FiCloud, FiDatabase, FiLoader, FiSave } from 'react-icons/fi';
+import { Icon } from '../../components/common/Icon';
 import { Button } from '../../components/common/Button';
 import { Card, CardTitle } from '../../components/common/Card';
 import { isSupabaseConfigured } from '../../lib/supabase/client';
@@ -79,18 +79,18 @@ export default function ConfiguracionPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="font-display text-2xl font-bold text-ink-900">Configuración general</h2>
-        <p className="text-sm text-ink-500">Datos del torneo, puntuación por nivel, nombres/colores por defecto de los equipos y estado de persistencia.</p>
+        <h2 className="font-display text-2xl font-bold text-on-surface">Configuración general</h2>
+        <p className="text-sm text-on-surface-variant">Datos del torneo, puntuación por nivel, nombres/colores por defecto de los equipos y estado de persistencia.</p>
       </div>
 
       <Card>
         <CardTitle>Información del torneo</CardTitle>
-        <p className="mt-1 text-sm text-ink-500">Se muestra en el Inicio: nombre, período, estado, organizador y banner.</p>
+        <p className="mt-1 text-sm text-on-surface-variant">Se muestra en el Inicio: nombre, período, estado, organizador y banner.</p>
 
         <div className="mt-4 flex items-center gap-4">
-          <div className="flex h-16 w-28 shrink-0 items-center justify-center overflow-hidden rounded-lg border border-surface-300 bg-surface-100 text-ink-400">
+          <div className="flex h-16 w-28 shrink-0 items-center justify-center overflow-hidden rounded-lg border border-white/15 bg-surface-container text-on-surface-variant">
             {uploadingBanner ? (
-              <FiLoader className="animate-spin text-xl text-brand-400" />
+              <Icon name="progress_activity" className="animate-spin text-xl text-primary-fixed-dim" />
             ) : tournamentForm.bannerUrl ? (
               <img src={tournamentForm.bannerUrl} alt="" className="h-full w-full object-cover" />
             ) : (
@@ -98,53 +98,53 @@ export default function ConfiguracionPage() {
             )}
           </div>
           <label className="text-sm">
-            <span className="mb-1 block text-ink-500">Banner (opcional)</span>
-            <input type="file" accept="image/*" onChange={handleBanner} disabled={uploadingBanner} className="text-xs text-ink-500" />
+            <span className="mb-1 block text-on-surface-variant">Banner (opcional)</span>
+            <input type="file" accept="image/*" onChange={handleBanner} disabled={uploadingBanner} className="text-xs text-on-surface-variant" />
             {bannerError && <p className="mt-1 text-xs text-red-600">{bannerError}</p>}
           </label>
         </div>
 
         <div className="mt-4 grid gap-4 sm:grid-cols-2">
           <div>
-            <label className="mb-1 block text-sm text-ink-500">Nombre del torneo</label>
+            <label className="mb-1 block text-sm text-on-surface-variant">Nombre del torneo</label>
             <input
               value={tournamentForm.name}
               onChange={(e) => setTournamentForm((f) => ({ ...f, name: e.target.value }))}
-              className="w-full rounded-lg border border-surface-300 bg-surface-0 px-3 py-2 text-ink-900 outline-none focus:border-brand-500"
+              className="w-full rounded-lg border border-white/15 bg-surface-container-low px-3 py-2 text-on-surface outline-none focus:border-primary-container"
             />
           </div>
           <div>
-            <label className="mb-1 block text-sm text-ink-500">Organizador</label>
+            <label className="mb-1 block text-sm text-on-surface-variant">Organizador</label>
             <input
               value={tournamentForm.organizer ?? ''}
               onChange={(e) => setTournamentForm((f) => ({ ...f, organizer: e.target.value }))}
-              className="w-full rounded-lg border border-surface-300 bg-surface-0 px-3 py-2 text-ink-900 outline-none focus:border-brand-500"
+              className="w-full rounded-lg border border-white/15 bg-surface-container-low px-3 py-2 text-on-surface outline-none focus:border-primary-container"
             />
           </div>
           <div>
-            <label className="mb-1 block text-sm text-ink-500">Inicio</label>
+            <label className="mb-1 block text-sm text-on-surface-variant">Inicio</label>
             <input
               type="date"
               value={tournamentForm.periodStart ?? ''}
               onChange={(e) => setTournamentForm((f) => ({ ...f, periodStart: e.target.value }))}
-              className="w-full rounded-lg border border-surface-300 bg-surface-0 px-3 py-2 text-ink-900 outline-none focus:border-brand-500"
+              className="w-full rounded-lg border border-white/15 bg-surface-container-low px-3 py-2 text-on-surface outline-none focus:border-primary-container"
             />
           </div>
           <div>
-            <label className="mb-1 block text-sm text-ink-500">Fin</label>
+            <label className="mb-1 block text-sm text-on-surface-variant">Fin</label>
             <input
               type="date"
               value={tournamentForm.periodEnd ?? ''}
               onChange={(e) => setTournamentForm((f) => ({ ...f, periodEnd: e.target.value }))}
-              className="w-full rounded-lg border border-surface-300 bg-surface-0 px-3 py-2 text-ink-900 outline-none focus:border-brand-500"
+              className="w-full rounded-lg border border-white/15 bg-surface-container-low px-3 py-2 text-on-surface outline-none focus:border-primary-container"
             />
           </div>
           <div>
-            <label className="mb-1 block text-sm text-ink-500">Estado</label>
+            <label className="mb-1 block text-sm text-on-surface-variant">Estado</label>
             <select
               value={tournamentForm.status}
               onChange={(e) => setTournamentForm((f) => ({ ...f, status: e.target.value as TournamentStatus }))}
-              className="w-full rounded-lg border border-surface-300 bg-surface-0 px-3 py-2 text-ink-900 outline-none focus:border-brand-500"
+              className="w-full rounded-lg border border-white/15 bg-surface-container-low px-3 py-2 text-on-surface outline-none focus:border-primary-container"
             >
               {Object.entries(TOURNAMENT_STATUS_LABELS).map(([value, label]) => (
                 <option key={value} value={value}>
@@ -157,18 +157,18 @@ export default function ConfiguracionPage() {
 
         <div className="mt-4 flex justify-end">
           <Button onClick={handleSaveTournament} disabled={uploadingBanner}>
-            {tournamentSaved ? <FiCheckCircle /> : <FiSave />} {tournamentSaved ? 'Guardado' : 'Guardar información del torneo'}
+            {tournamentSaved ? <Icon name="check_circle" /> : <Icon name="save" />} {tournamentSaved ? 'Guardado' : 'Guardar información del torneo'}
           </Button>
         </div>
       </Card>
 
       <Card>
         <CardTitle>Sistema de puntuación por nivel</CardTitle>
-        <p className="mt-1 text-sm text-ink-500">Usado para calcular el puntaje individual y total de cada equipo.</p>
+        <p className="mt-1 text-sm text-on-surface-variant">Usado para calcular el puntaje individual y total de cada equipo.</p>
         <div className="mt-4 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-6">
           {SKILL_LEVELS.map((level) => (
             <div key={level}>
-              <label className="mb-1 block text-xs text-ink-500">
+              <label className="mb-1 block text-xs text-on-surface-variant">
                 Nivel {level} · {SKILL_LABELS[level]}
               </label>
               <input
@@ -178,7 +178,7 @@ export default function ConfiguracionPage() {
                 onChange={(e) =>
                   setScoring((s) => ({ ...s, [level]: Number(e.target.value) || 0 }) as Record<SkillLevel, number>)
                 }
-                className="w-full rounded-lg border border-surface-300 bg-surface-0 px-3 py-2 text-ink-900 outline-none focus:border-brand-500"
+                className="w-full rounded-lg border border-white/15 bg-surface-container-low px-3 py-2 text-on-surface outline-none focus:border-primary-container"
               />
             </div>
           ))}
@@ -187,10 +187,10 @@ export default function ConfiguracionPage() {
 
       <Card>
         <CardTitle>Nombres y colores por defecto de los equipos</CardTitle>
-        <p className="mt-1 text-sm text-ink-500">Se usan como punto de partida al generar una selección; luego se pueden renombrar.</p>
+        <p className="mt-1 text-sm text-on-surface-variant">Se usan como punto de partida al generar una selección; luego se pueden renombrar.</p>
         <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {teams.map((t, i) => (
-            <div key={i} className="flex items-center gap-2 rounded-lg border border-surface-200 p-2">
+            <div key={i} className="flex items-center gap-2 rounded-lg border border-white/10 p-2">
               <input
                 type="color"
                 value={t.color}
@@ -204,7 +204,7 @@ export default function ConfiguracionPage() {
                 onChange={(e) =>
                   setTeams((ts) => ts.map((team, idx) => (idx === i ? { ...team, name: e.target.value } : team)))
                 }
-                className="w-full rounded-lg border border-surface-300 bg-surface-0 px-3 py-2 text-sm text-ink-900 outline-none focus:border-brand-500"
+                className="w-full rounded-lg border border-white/15 bg-surface-container-low px-3 py-2 text-sm text-on-surface outline-none focus:border-primary-container"
               />
             </div>
           ))}
@@ -213,7 +213,7 @@ export default function ConfiguracionPage() {
 
       <div className="flex justify-end">
         <Button onClick={handleSave}>
-          {saved ? <FiCheckCircle /> : <FiSave />} {saved ? 'Guardado' : 'Guardar configuración'}
+          {saved ? <Icon name="check_circle" /> : <Icon name="save" />} {saved ? 'Guardado' : 'Guardar configuración'}
         </Button>
       </div>
 
@@ -224,24 +224,24 @@ export default function ConfiguracionPage() {
             isSupabaseConfigured ? 'border-green-200 bg-green-50 text-green-700' : 'border-gray-300 bg-gray-50 text-gray-700'
           }`}
         >
-          {isSupabaseConfigured ? <FiCloud /> : <FiDatabase />}
+          {isSupabaseConfigured ? <Icon name="cloud_done" /> : <Icon name="storage" />}
           {isSupabaseConfigured
             ? 'Conectado a Supabase: jugadores, configuración, selecciones e historial se guardan en la base de datos.'
             : 'Modo local: los datos se guardan en este navegador (localStorage).'}
         </div>
         {!isSupabaseConfigured && (
-          <div className="mt-3 space-y-1 text-sm text-ink-500">
+          <div className="mt-3 space-y-1 text-sm text-on-surface-variant">
             <p>Para conectar Supabase más adelante, sin perder nada de lo ya construido:</p>
             <ol className="list-inside list-decimal space-y-1 pl-1">
               <li>
-                Corré los scripts <code className="rounded bg-surface-100 px-1 py-0.5 text-xs">supabase/migrations/0001_init.sql</code> y{' '}
-                <code className="rounded bg-surface-100 px-1 py-0.5 text-xs">0002_storage.sql</code> en el SQL editor de tu proyecto de
+                Corré los scripts <code className="rounded bg-surface-container px-1 py-0.5 text-xs">supabase/migrations/0001_init.sql</code> y{' '}
+                <code className="rounded bg-surface-container px-1 py-0.5 text-xs">0002_storage.sql</code> en el SQL editor de tu proyecto de
                 Supabase (el segundo crea el bucket para las fotos de jugadores).
               </li>
               <li>
-                Completá <code className="rounded bg-surface-100 px-1 py-0.5 text-xs">NEXT_PUBLIC_SUPABASE_URL</code> y{' '}
-                <code className="rounded bg-surface-100 px-1 py-0.5 text-xs">NEXT_PUBLIC_SUPABASE_ANON_KEY</code> en{' '}
-                <code className="rounded bg-surface-100 px-1 py-0.5 text-xs">.env.local</code>.
+                Completá <code className="rounded bg-surface-container px-1 py-0.5 text-xs">NEXT_PUBLIC_SUPABASE_URL</code> y{' '}
+                <code className="rounded bg-surface-container px-1 py-0.5 text-xs">NEXT_PUBLIC_SUPABASE_ANON_KEY</code> en{' '}
+                <code className="rounded bg-surface-container px-1 py-0.5 text-xs">.env.local</code>.
               </li>
               <li>Reiniciá la app: va a empezar a usar Supabase automáticamente, sin tocar código.</li>
             </ol>

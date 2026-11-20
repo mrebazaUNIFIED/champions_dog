@@ -1,17 +1,7 @@
 'use client';
 
 import { useMemo, useRef, useState } from 'react';
-import {
-  FiCheck,
-  FiDownload,
-  FiEdit2,
-  FiGrid,
-  FiPlus,
-  FiSearch,
-  FiTrash2,
-  FiUpload,
-  FiUser,
-} from 'react-icons/fi';
+import { Icon } from '../../components/common/Icon';
 import { PositionBadge, SkillBadge } from '../../components/common/Badges';
 import { Button } from '../../components/common/Button';
 import { Card, CardTitle } from '../../components/common/Card';
@@ -84,19 +74,19 @@ export default function JugadoresPage() {
     <div className="space-y-6">
       <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
         <div>
-          <h2 className="font-display text-2xl font-bold text-ink-900">Jugadores</h2>
-          <p className="text-sm text-ink-500">{players.length} registrados · {players.filter((p) => p.available).length} disponibles</p>
+          <h2 className="font-display text-2xl font-bold text-on-surface">Jugadores</h2>
+          <p className="text-sm text-on-surface-variant">{players.length} registrados · {players.filter((p) => p.available).length} disponibles</p>
         </div>
         <div className="flex flex-wrap gap-2">
           <Button variant="secondary" onClick={() => downloadPlayersTemplate()}>
-            <FiDownload /> Plantilla
+            <Icon name="download" /> Plantilla
           </Button>
           <Button variant="secondary" onClick={() => fileRef.current?.click()}>
-            <FiUpload /> Importar Excel
+            <Icon name="upload" /> Importar Excel
           </Button>
           <input ref={fileRef} type="file" accept=".xlsx,.xls" className="hidden" onChange={handleImportFile} />
           <Button variant="secondary" onClick={() => exportPlayersToExcel(players)}>
-            <FiGrid /> Exportar
+            <Icon name="grid_view" /> Exportar
           </Button>
           <Button
             onClick={() => {
@@ -104,7 +94,7 @@ export default function JugadoresPage() {
               setModalOpen(true);
             }}
           >
-            <FiPlus /> Nuevo jugador
+            <Icon name="add" /> Nuevo jugador
           </Button>
         </div>
       </div>
@@ -112,14 +102,14 @@ export default function JugadoresPage() {
       <Card className="overflow-x-auto p-0">
         <div className="p-5 pb-0">
           <CardTitle>Resumen general de niveles</CardTitle>
-          <p className="mt-1 text-sm text-ink-500">
+          <p className="mt-1 text-sm text-on-surface-variant">
             Los {players.length} jugadores se ordenan de mejor a peor (promedio de sus 4 niveles por posición) y se
             reparten en 6 grupos parejos, para armar los 6 equipos con un jugador de cada nivel.
           </p>
         </div>
         <table className="w-full text-sm">
           <thead>
-            <tr className="border-b border-surface-200 text-left text-xs uppercase tracking-wide text-ink-400">
+            <tr className="border-b border-white/10 text-left text-xs uppercase tracking-wide text-on-surface-variant">
               <th className="px-4 py-3">Nivel</th>
               <th className="px-4 py-3">Cantidad</th>
               <th className="px-4 py-3">Jugadores</th>
@@ -130,7 +120,7 @@ export default function JugadoresPage() {
               const group = levelTiers[idx] ?? [];
               const isSix = group.length === TARGET_GROUP_SIZE;
               return (
-                <tr key={level} className="border-b border-surface-200 last:border-0">
+                <tr key={level} className="border-b border-white/10 last:border-0">
                   <td className="px-4 py-3">
                     <SkillBadge level={level} />
                   </td>
@@ -140,10 +130,10 @@ export default function JugadoresPage() {
                         isSix ? 'bg-green-50 text-green-700' : 'bg-gray-100 text-gray-600'
                       }`}
                     >
-                      {isSix && <FiCheck />} {group.length}
+                      {isSix && <Icon name="check" />} {group.length}
                     </span>
                   </td>
-                  <td className="px-4 py-3 text-ink-500">
+                  <td className="px-4 py-3 text-on-surface-variant">
                     {group.length > 0 ? group.map((p) => p.fullName).join(', ') : '—'}
                   </td>
                 </tr>
@@ -163,7 +153,7 @@ export default function JugadoresPage() {
               ))}
             </ul>
           )}
-          <button className="mt-2 text-xs text-ink-400 underline" onClick={() => setImportFeedback(null)}>
+          <button className="mt-2 text-xs text-on-surface-variant underline" onClick={() => setImportFeedback(null)}>
             Cerrar
           </button>
         </Card>
@@ -171,18 +161,18 @@ export default function JugadoresPage() {
 
       <Card className="flex flex-col gap-3 sm:flex-row sm:items-center">
         <div className="relative flex-1">
-          <FiSearch className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-ink-400" />
+          <Icon name="search" className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant" />
           <input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Buscar por nombre…"
-            className="w-full rounded-lg border border-surface-300 bg-surface-0 py-2 pl-9 pr-3 text-sm text-ink-900 outline-none focus:border-brand-500"
+            className="w-full rounded-lg border border-white/15 bg-surface-container-low py-2 pl-9 pr-3 text-sm text-on-surface outline-none focus:border-primary-container"
           />
         </div>
         <select
           value={positionFilter}
           onChange={(e) => setPositionFilter(e.target.value as Position | 'all')}
-          className="rounded-lg border border-surface-300 bg-surface-0 px-3 py-2 text-sm text-ink-900 outline-none focus:border-brand-500"
+          className="rounded-lg border border-white/15 bg-surface-container-low px-3 py-2 text-sm text-on-surface outline-none focus:border-primary-container"
         >
           <option value="all">Todas las posiciones</option>
           {POSITIONS.map((p) => (
@@ -200,17 +190,17 @@ export default function JugadoresPage() {
           return (
             <div key={level}>
               <div className="mb-3 flex items-baseline gap-3">
-                <p className="font-display text-4xl leading-none text-ink-900">{level}</p>
+                <p className="font-display text-4xl leading-none text-on-surface">{level}</p>
                 <div>
-                  <p className="text-sm font-semibold text-ink-900">{SKILL_LABELS[level]}</p>
-                  <p className="text-xs text-ink-400">{tierPlayers.length} jugadores</p>
+                  <p className="text-sm font-semibold text-on-surface">{SKILL_LABELS[level]}</p>
+                  <p className="text-xs text-on-surface-variant">{tierPlayers.length} jugadores</p>
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6">
                 {tierPlayers.map((p) => (
                   <div
                     key={p.id}
-                    className="group relative flex flex-col items-center gap-2 rounded-xl border border-surface-200 bg-surface-0 p-3 text-center"
+                    className="group relative flex flex-col items-center gap-2 rounded-xl border border-white/10 bg-surface-container-low p-3 text-center"
                   >
                     <div className="absolute right-1.5 top-1.5 flex gap-0.5 opacity-0 transition group-hover:opacity-100">
                       <button
@@ -218,10 +208,10 @@ export default function JugadoresPage() {
                           setEditing(p);
                           setModalOpen(true);
                         }}
-                        className="rounded p-1 text-ink-400 hover:bg-surface-100 hover:text-ink-900"
+                        className="rounded p-1 text-on-surface-variant hover:bg-surface-container hover:text-on-surface"
                         aria-label="Editar"
                       >
-                        <FiEdit2 className="text-xs" />
+                        <Icon name="edit" className="text-xs" />
                       </button>
                       <button
                         onClick={() => {
@@ -230,17 +220,17 @@ export default function JugadoresPage() {
                         className="rounded p-1 text-red-400 hover:bg-red-50"
                         aria-label="Eliminar"
                       >
-                        <FiTrash2 className="text-xs" />
+                        <Icon name="delete" className="text-xs" />
                       </button>
                     </div>
-                    <div className="flex h-14 w-14 items-center justify-center overflow-hidden rounded-full border border-surface-200 bg-surface-100 text-xl text-ink-400">
+                    <div className="flex h-14 w-14 items-center justify-center overflow-hidden rounded-full border border-white/10 bg-surface-container text-xl text-on-surface-variant">
                       {p.photoUrl ? (
                         <img src={p.photoUrl} alt="" className="h-full w-full object-cover" />
                       ) : (
-                        <FiUser />
+                        <Icon name="person" />
                       )}
                     </div>
-                    <p className="w-full truncate text-sm font-medium text-ink-900">{p.fullName}</p>
+                    <p className="w-full truncate text-sm font-medium text-on-surface">{p.fullName}</p>
                     <PositionBadge position={p.primaryPosition} />
                     {!p.available && (
                       <span className="rounded-full bg-red-50 px-2 py-0.5 text-[10px] font-medium text-red-600">
@@ -254,10 +244,10 @@ export default function JugadoresPage() {
           );
         })}
         {players.length > 0 && levelTiers.every((tier) => tier.filter(matchesFilters).length === 0) && (
-          <Card className="py-10 text-center text-sm text-ink-400">No hay jugadores que coincidan con el filtro.</Card>
+          <Card className="py-10 text-center text-sm text-on-surface-variant">No hay jugadores que coincidan con el filtro.</Card>
         )}
         {players.length === 0 && (
-          <Card className="py-10 text-center text-sm text-ink-400">Todavía no hay jugadores registrados.</Card>
+          <Card className="py-10 text-center text-sm text-on-surface-variant">Todavía no hay jugadores registrados.</Card>
         )}
       </div>
 

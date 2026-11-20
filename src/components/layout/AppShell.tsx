@@ -2,19 +2,15 @@
 
 import type { ReactNode } from 'react';
 import { useBootstrap } from '../../hooks/useBootstrap';
-import Sidebar from './Sidebar';
-import Topbar from './Topbar';
+import Header from './Header';
 
 export default function AppShell({ children }: { children: ReactNode }) {
   useBootstrap();
 
   return (
-    <div className="flex min-h-screen">
-      <Sidebar />
-      <div className="flex min-h-screen min-w-0 flex-1 flex-col">
-        <Topbar />
-        <main className="min-w-0 flex-1 p-4 lg:p-8">{children}</main>
-      </div>
+    <div className="min-h-screen bg-background">
+      <Header />
+      <main className="w-full px-margin pb-space-xl pt-24 md:px-margin-tablet">{children}</main>
     </div>
   );
 }

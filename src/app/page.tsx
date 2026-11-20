@@ -3,7 +3,7 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import { useEffect } from 'react';
-import { FiCalendar, FiShield, FiUser } from 'react-icons/fi';
+import { Icon } from '../components/common/Icon';
 import { Card } from '../components/common/Card';
 import { TeamBadge } from '../components/common/TeamBadge';
 import { useTeamsStore } from '../store/useTeamsStore';
@@ -52,8 +52,8 @@ export default function DashboardPage() {
       >
         {!info.bannerUrl && (
           <>
-            <div className="pointer-events-none absolute -right-16 -top-16 h-56 w-56 rounded-full bg-brand-500/25 blur-[80px]" />
-            <div className="pointer-events-none absolute -bottom-20 left-1/3 h-48 w-48 rounded-full bg-gold-500/10 blur-[90px]" />
+            <div className="pointer-events-none absolute -right-16 -top-16 h-56 w-56 rounded-full bg-primary-container/25 blur-[80px]" />
+            <div className="pointer-events-none absolute -bottom-20 left-1/3 h-48 w-48 rounded-full bg-tertiary-container/10 blur-[90px]" />
           </>
         )}
         <div className="relative flex flex-col items-start gap-4 sm:flex-row sm:items-center">
@@ -66,30 +66,30 @@ export default function DashboardPage() {
 
       <div className="flex flex-wrap gap-3">
         {period && (
-          <span className="flex items-center gap-2 rounded-lg border border-surface-200 bg-surface-0 px-3 py-2 text-sm text-ink-700">
-            <FiCalendar className="text-brand-600" /> {period}
+          <span className="flex items-center gap-2 rounded-lg border border-white/10 bg-surface-container-low px-3 py-2 text-sm text-on-surface">
+            <Icon name="calendar_month" className="text-primary-fixed-dim" /> {period}
           </span>
         )}
-        <span className="flex items-center gap-2 rounded-lg border border-surface-200 bg-surface-0 px-3 py-2 text-sm text-ink-700">
-          <span className="h-2 w-2 rounded-full bg-brand-500" /> {TOURNAMENT_STATUS_LABELS[info.status]}
+        <span className="flex items-center gap-2 rounded-lg border border-white/10 bg-surface-container-low px-3 py-2 text-sm text-on-surface">
+          <span className="h-2 w-2 rounded-full bg-primary-container" /> {TOURNAMENT_STATUS_LABELS[info.status]}
         </span>
         {info.organizer && (
-          <span className="flex items-center gap-2 rounded-lg border border-surface-200 bg-surface-0 px-3 py-2 text-sm text-ink-700">
-            <FiUser className="text-brand-600" /> {info.organizer}
+          <span className="flex items-center gap-2 rounded-lg border border-white/10 bg-surface-container-low px-3 py-2 text-sm text-on-surface">
+            <Icon name="person" className="text-primary-fixed-dim" /> {info.organizer}
           </span>
         )}
       </div>
 
       <div>
         <div className="mb-3 flex items-center justify-between">
-          <h3 className="font-display text-xl text-ink-900">Equipos</h3>
-          <p className="text-sm text-ink-500">{teams.length} inscritos</p>
+          <h3 className="font-display text-xl text-on-surface">Equipos</h3>
+          <p className="text-sm text-on-surface-variant">{teams.length} inscritos</p>
         </div>
         {teams.length === 0 ? (
-          <Card className="flex flex-col items-center gap-2 py-10 text-center text-ink-400">
-            <FiShield className="text-3xl" />
+          <Card className="flex flex-col items-center gap-2 py-10 text-center text-on-surface-variant">
+            <Icon name="shield" className="text-3xl" />
             Todavía no cargaste ningún equipo.
-            <Link href="/equipos" className="text-sm font-medium text-brand-600 hover:underline">
+            <Link href="/equipos" className="text-sm font-medium text-primary-fixed-dim hover:underline">
               Ir a Equipos
             </Link>
           </Card>
@@ -99,14 +99,14 @@ export default function DashboardPage() {
               <Link
                 key={team.id}
                 href="/equipos"
-                className="flex flex-col items-center gap-2 rounded-xl border border-surface-200 bg-surface-0 p-4 text-center transition hover:border-brand-400 hover:shadow-sm"
+                className="flex flex-col items-center gap-2 rounded-xl border border-white/10 bg-surface-container-low p-4 text-center transition hover:border-primary-fixed-dim hover:shadow-sm"
               >
                 {team.logoUrl ? (
                   <img src={team.logoUrl} alt="" className="h-12 w-12 rounded-full object-cover" />
                 ) : (
                   <TeamBadge name={team.name} color={team.color} size={48} />
                 )}
-                <p className="w-full truncate text-sm font-medium text-ink-900">{team.name}</p>
+                <p className="w-full truncate text-sm font-medium text-on-surface">{team.name}</p>
               </Link>
             ))}
           </div>

@@ -8,32 +8,32 @@ const POSITION_SHORT: Record<Position, string> = {
 };
 
 const POSITION_COLORS: Record<Position, string> = {
-  arquero: 'bg-gray-100 text-gray-700 border-gray-300',
-  defensa: 'bg-green-50 text-green-700 border-green-200',
-  mediocampista: 'bg-gray-50 text-gray-600 border-gray-200',
-  delantero: 'bg-red-50 text-red-700 border-red-200',
+  arquero: 'bg-surface-container-highest text-on-surface-variant border-white/10',
+  defensa: 'bg-primary-container/15 text-primary-fixed-dim border-primary-container/25',
+  mediocampista: 'bg-surface-container text-on-surface-variant border-white/10',
+  delantero: 'bg-secondary-container/15 text-secondary-fixed border-secondary-container/25',
 };
 
 export function PositionBadge({ position, className = '' }: { position: Position; className?: string }) {
   return (
-    <span className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-medium ${POSITION_COLORS[position]} ${className}`}>
+    <span className={`inline-flex items-center rounded-full border px-2.5 py-0.5 font-label text-[11px] ${POSITION_COLORS[position]} ${className}`}>
       {POSITION_LABELS[position]}
     </span>
   );
 }
 
 const SKILL_COLORS: Record<SkillLevel, string> = {
-  1: 'bg-green-100 text-green-800 border-green-300',
-  2: 'bg-green-50 text-green-700 border-green-200',
-  3: 'bg-gray-100 text-gray-700 border-gray-300',
-  4: 'bg-gray-50 text-gray-600 border-gray-200',
-  5: 'bg-red-50 text-red-700 border-red-200',
-  6: 'bg-red-100 text-red-800 border-red-300',
+  1: 'bg-primary-container/25 text-primary-fixed-dim border-primary-container/35',
+  2: 'bg-primary-container/10 text-primary-fixed-dim border-primary-container/20',
+  3: 'bg-surface-container-highest text-on-surface-variant border-white/10',
+  4: 'bg-surface-container text-on-surface-variant border-white/10',
+  5: 'bg-secondary-container/10 text-secondary-fixed border-secondary-container/20',
+  6: 'bg-secondary-container/25 text-secondary-fixed border-secondary-container/35',
 };
 
 export function SkillBadge({ level, className = '' }: { level: SkillLevel; className?: string }) {
   return (
-    <span className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-medium ${SKILL_COLORS[level]} ${className}`}>
+    <span className={`inline-flex items-center rounded-full border px-2.5 py-0.5 font-label text-[11px] ${SKILL_COLORS[level]} ${className}`}>
       Nivel {level} · {SKILL_LABELS[level]}
     </span>
   );
@@ -42,10 +42,10 @@ export function SkillBadge({ level, className = '' }: { level: SkillLevel; class
 export function MatchStatusBadge({ status, className = '' }: { status: MatchStatus; className?: string }) {
   if (status === 'live') {
     return (
-      <span className={`inline-flex items-center gap-1.5 rounded-full bg-green-50 px-2.5 py-0.5 text-xs font-semibold text-green-700 ${className}`}>
+      <span className={`inline-flex items-center gap-1.5 rounded-full bg-primary-container/15 px-2.5 py-0.5 font-label text-[11px] text-primary-fixed-dim ${className}`}>
         <span className="relative flex h-2 w-2">
-          <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-green-500 opacity-75" />
-          <span className="relative inline-flex h-2 w-2 rounded-full bg-green-600" />
+          <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-primary-container opacity-75" />
+          <span className="relative inline-flex h-2 w-2 rounded-full bg-primary-container" />
         </span>
         {MATCH_STATUS_LABELS.live}
       </span>
@@ -53,13 +53,13 @@ export function MatchStatusBadge({ status, className = '' }: { status: MatchStat
   }
   if (status === 'finished') {
     return (
-      <span className={`inline-flex items-center rounded-full bg-pitch-900 px-2.5 py-0.5 text-xs font-semibold text-white ${className}`}>
+      <span className={`inline-flex items-center rounded-full bg-surface-container-high px-2.5 py-0.5 font-label text-[11px] text-on-surface-variant ${className}`}>
         {MATCH_STATUS_LABELS.finished}
       </span>
     );
   }
   return (
-    <span className={`inline-flex items-center rounded-full bg-gray-100 px-2.5 py-0.5 text-xs font-semibold text-gray-600 ${className}`}>
+    <span className={`inline-flex items-center rounded-full bg-surface-container px-2.5 py-0.5 font-label text-[11px] text-on-surface-variant ${className}`}>
       {MATCH_STATUS_LABELS.scheduled}
     </span>
   );
@@ -78,7 +78,7 @@ export function PositionLevelsBadge({
         <span
           key={position}
           title={POSITION_LABELS[position]}
-          className={`inline-flex items-center gap-1 rounded-md border px-1.5 py-0.5 text-[10px] font-semibold ${SKILL_COLORS[positionLevels[position]]}`}
+          className={`inline-flex items-center gap-1 rounded-md border px-1.5 py-0.5 font-label text-[9px] ${SKILL_COLORS[positionLevels[position]]}`}
         >
           {POSITION_SHORT[position]} {positionLevels[position]}
         </span>

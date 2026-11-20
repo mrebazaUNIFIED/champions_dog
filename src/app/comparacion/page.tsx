@@ -12,7 +12,7 @@ import {
   XAxis,
   YAxis,
 } from 'recharts';
-import { FiArrowDown, FiArrowUp, FiBarChart2 } from 'react-icons/fi';
+import { Icon } from '../../components/common/Icon';
 import { Card, CardTitle } from '../../components/common/Card';
 import { useSelectionStore } from '../../store/useSelectionStore';
 import { POSITIONS, POSITION_LABELS, SKILL_LEVELS } from '../../types';
@@ -26,7 +26,7 @@ export default function ComparacionPage() {
 
   if (!current) {
     return (
-      <Card className="text-center text-sm text-ink-400">
+      <Card className="text-center text-sm text-on-surface-variant">
         Generá primero una selección de equipos en la sección &quot;Selección de equipos&quot;.
       </Card>
     );
@@ -62,30 +62,30 @@ export default function ComparacionPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="font-display text-2xl font-bold text-ink-900">Comparación de equipos</h2>
-        <p className="text-sm text-ink-500">¿Qué tan equilibrada quedó la selección generada?</p>
+        <h2 className="font-display text-2xl font-bold text-on-surface">Comparación de equipos</h2>
+        <p className="text-sm text-on-surface-variant">¿Qué tan equilibrada quedó la selección generada?</p>
       </div>
 
       <div className="grid gap-4 sm:grid-cols-3">
         <Card className="flex items-center gap-3">
-          <FiArrowUp className="text-xl text-green-600" />
+          <Icon name="arrow_upward" className="text-xl text-green-600" />
           <div>
-            <p className="text-sm text-ink-500">Equipo más fuerte</p>
-            <p className="font-display font-bold text-ink-900">{strongest?.name}</p>
+            <p className="text-sm text-on-surface-variant">Equipo más fuerte</p>
+            <p className="font-display font-bold text-on-surface">{strongest?.name}</p>
           </div>
         </Card>
         <Card className="flex items-center gap-3">
-          <FiArrowDown className="text-xl text-red-500" />
+          <Icon name="arrow_downward" className="text-xl text-red-500" />
           <div>
-            <p className="text-sm text-ink-500">Equipo más débil</p>
-            <p className="font-display font-bold text-ink-900">{weakest?.name}</p>
+            <p className="text-sm text-on-surface-variant">Equipo más débil</p>
+            <p className="font-display font-bold text-on-surface">{weakest?.name}</p>
           </div>
         </Card>
         <Card className="flex items-center gap-3">
-          <FiBarChart2 className="text-xl text-brand-600" />
+          <Icon name="bar_chart" className="text-xl text-primary-fixed-dim" />
           <div>
-            <p className="text-sm text-ink-500">Diferencia de puntaje</p>
-            <p className="font-display font-bold text-ink-900">{current.maxDiff} pts</p>
+            <p className="text-sm text-on-surface-variant">Diferencia de puntaje</p>
+            <p className="font-display font-bold text-on-surface">{current.maxDiff} pts</p>
           </div>
         </Card>
       </div>
@@ -152,7 +152,7 @@ export default function ComparacionPage() {
         <CardTitle>Tabla de puntuaciones</CardTitle>
         <table className="mt-4 w-full text-sm">
           <thead>
-            <tr className="border-b border-surface-200 text-left text-xs uppercase text-ink-400">
+            <tr className="border-b border-white/10 text-left text-xs uppercase text-on-surface-variant">
               <th className="py-2">Equipo</th>
               <th className="py-2">Puntaje total</th>
               <th className="py-2">Promedio</th>
@@ -164,14 +164,14 @@ export default function ComparacionPage() {
           </thead>
           <tbody>
             {current.stats.map((s) => (
-              <tr key={s.teamId} className="border-b border-surface-200">
-                <td className="py-2 font-medium text-ink-900">{teamsById[s.teamId]?.name}</td>
-                <td className="py-2 text-ink-700">{s.totalScore}</td>
-                <td className="py-2 text-ink-700">{s.averageScore.toFixed(1)}</td>
-                <td className="py-2 text-ink-700">{s.positionCounts.arquero}</td>
-                <td className="py-2 text-ink-700">{s.positionCounts.defensa}</td>
-                <td className="py-2 text-ink-700">{s.positionCounts.mediocampista}</td>
-                <td className="py-2 text-ink-700">{s.positionCounts.delantero}</td>
+              <tr key={s.teamId} className="border-b border-white/10">
+                <td className="py-2 font-medium text-on-surface">{teamsById[s.teamId]?.name}</td>
+                <td className="py-2 text-on-surface">{s.totalScore}</td>
+                <td className="py-2 text-on-surface">{s.averageScore.toFixed(1)}</td>
+                <td className="py-2 text-on-surface">{s.positionCounts.arquero}</td>
+                <td className="py-2 text-on-surface">{s.positionCounts.defensa}</td>
+                <td className="py-2 text-on-surface">{s.positionCounts.mediocampista}</td>
+                <td className="py-2 text-on-surface">{s.positionCounts.delantero}</td>
               </tr>
             ))}
           </tbody>
