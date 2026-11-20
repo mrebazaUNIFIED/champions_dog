@@ -1,4 +1,16 @@
-import type { ChampionshipConfig, HistoryEntry, Player, Position, SelectionResult, SkillLevel, VoteRecord } from '../../types';
+import type {
+  Award,
+  ChampionshipConfig,
+  HistoryEntry,
+  Match,
+  Player,
+  Position,
+  SelectionResult,
+  SkillLevel,
+  TournamentInfo,
+  TournamentTeam,
+  VoteRecord,
+} from '../../types';
 import type { DataRepository } from './repository.types';
 
 const KEYS = {
@@ -7,6 +19,10 @@ const KEYS = {
   history: 'pdl.history',
   currentSelection: 'pdl.currentSelection',
   votes: 'pdl.votes',
+  teams: 'pdl.teams',
+  matches: 'pdl.matches',
+  awards: 'pdl.awards',
+  tournamentInfo: 'pdl.tournamentInfo',
 };
 
 function read<T>(key: string, fallback: T): T {
@@ -104,5 +120,64 @@ export class LocalRepository implements DataRepository {
 
   async saveCurrentSelection(result: SelectionResult | null): Promise<void> {
     write(KEYS.currentSelection, result);
+  }
+
+  async listTeams(): Promise<TournamentTeam[]> {
+    return read<TournamentTeam[]>(KEYS.teams, []);
+  }
+
+  async upsertTeam(team: TournamentTeam): Promise<void> {
+    const teams = await this.listTeams();
+    const idx = teams.findIndex((t) => t.id === team.id);
+    if (idx >= 0) teams[idx] = team;
+    else teams.push(team);
+    write(KEYS.teams, teams);
+  }
+
+  async deleteTeam(id: string): Promise<void> {
+    const teams = await this.listTeams();
+    write(KEYS.teams, teams.filter((t) => t.id !== id));
+  }
+
+  async listMatches(): Promise<Match[]> {
+    return read<Match[]>(KEYS.matches, []);
+  }
+
+  async upsertMatch(match: Match): Promise<void> {
+    const matches = await this.listMatches();
+    const idx = matches.findIndex((m) => m.id === match.id);
+    if (idx >= 0) matches[idx] = match;
+    else matches.push(match);
+    write(KEYS.matches, matches);
+  }
+
+  async deleteMatch(id: string): Promise<void> {
+    const matches = await this.listMatches();
+    write(KEYS.matches, matches.filter((m) => m.id !== id));
+  }
+
+  async listAwards(): Promise<Award[]> {
+    return read<Award[]>(KEYS.awards, []);
+  }
+
+  async upsertAward(award: Award): Promise<void> {
+    const awards = await this.listAwards();
+    const idx = awards.findIndex((a) => a.id === award.id);
+    if (idx >= 0) awards[idx] = award;
+    else awards.push(award);
+    write(KEYS.awards, awards);
+  }
+
+  async deleteAward(id: string): Promise<void> {
+    const awards = await this.listAwards();
+    write(KEYS.awards, awards.filter((a) => a.id !== id));
+  }
+
+  async getTournamentInfo(): Promise<TournamentInfo | null> {
+    return read<TournamentInfo | null>(KEYS.tournamentInfo, null);
+  }
+
+  async saveTournamentInfo(info: TournamentInfo): Promise<void> {
+    write(KEYS.tournamentInfo, info);
   }
 }

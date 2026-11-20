@@ -4,3 +4,4 @@ export * from './config';
 export * from './team';
 export * from './history';
 export * from './voting';
+export * from './tournament';

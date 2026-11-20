@@ -1,0 +1,50 @@
+-- 4.º Campeonato Perritos Locos - gestión del torneo: equipos propios (armados a mano,
+-- separados del generador de equipos balanceados), partidos, premios y datos generales.
+create table if not exists teams (
+  id uuid primary key default gen_random_uuid(),
+  name text not null,
+  color text not null default '#16a34a',
+  logo_url text,
+  player_ids jsonb not null default '[]'::jsonb,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+
+create table if not exists matches (
+  id uuid primary key default gen_random_uuid(),
+  phase text not null default 'Fase 1',
+  home_team_id uuid not null references teams(id) on delete cascade,
+  away_team_id uuid not null references teams(id) on delete cascade,
+  status text not null default 'scheduled' check (status in ('scheduled', 'live', 'finished')),
+  scheduled_at timestamptz,
+  home_lineup jsonb not null default '[]'::jsonb,
+  away_lineup jsonb not null default '[]'::jsonb,
+  events jsonb not null default '[]'::jsonb,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+
+create table if not exists awards (
+  id uuid primary key default gen_random_uuid(),
+  title text not null,
+  winner_player_id uuid references players(id) on delete set null,
+  winner_name text,
+  note text,
+  created_at timestamptz not null default now()
+);
+
+create table if not exists tournament_info (
+  id text primary key default 'singleton',
+  data jsonb not null,
+  updated_at timestamptz not null default now()
+);
+
+alter table teams enable row level security;
+alter table matches enable row level security;
+alter table awards enable row level security;
+alter table tournament_info enable row level security;
+
+create policy "teams_all" on teams for all using (true) with check (true);
+create policy "matches_all" on matches for all using (true) with check (true);
+create policy "awards_all" on awards for all using (true) with check (true);
+create policy "tournament_info_all" on tournament_info for all using (true) with check (true);
