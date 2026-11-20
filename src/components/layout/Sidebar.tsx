@@ -6,13 +6,11 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useState } from 'react';
 import { FiMenu, FiX } from 'react-icons/fi';
-import { useConfigStore } from '../../store/useConfigStore';
 import { NAV_GROUPS, NAV_ITEMS } from './navItems';
 
 export default function Sidebar() {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
-  const numberOfTeams = useConfigStore((s) => s.config.numberOfTeams);
 
   return (
     <>
@@ -85,13 +83,6 @@ export default function Sidebar() {
             </div>
           ))}
         </nav>
-
-        <div className="mx-4 mb-6 flex items-center gap-3 rounded-xl border border-white/10 bg-pitch-800/80 p-4">
-          <p className="font-display text-3xl leading-none text-white">{numberOfTeams}</p>
-          <p className="text-xs leading-snug text-white/50">
-            equipos configurados · ajustá la formación en Configuración del campeonato.
-          </p>
-        </div>
       </aside>
     </>
   );
