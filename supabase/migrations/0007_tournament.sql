@@ -48,3 +48,24 @@ create policy "teams_all" on teams for all using (true) with check (true);
 create policy "matches_all" on matches for all using (true) with check (true);
 create policy "awards_all" on awards for all using (true) with check (true);
 create policy "tournament_info_all" on tournament_info for all using (true) with check (true);
+
+-- Storage para logos de equipo y banner del torneo (mismo criterio que 0002_storage.sql).
+insert into storage.buckets (id, name, public)
+values ('tournament-media', 'tournament-media', true)
+on conflict (id) do nothing;
+
+create policy "tournament_media_public_read"
+  on storage.objects for select
+  using (bucket_id = 'tournament-media');
+
+create policy "tournament_media_insert"
+  on storage.objects for insert
+  with check (bucket_id = 'tournament-media');
+
+create policy "tournament_media_update"
+  on storage.objects for update
+  using (bucket_id = 'tournament-media');
+
+create policy "tournament_media_delete"
+  on storage.objects for delete
+  using (bucket_id = 'tournament-media');

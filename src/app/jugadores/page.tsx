@@ -2,30 +2,23 @@
 
 import { useMemo, useRef, useState } from 'react';
 import {
+  FiCheck,
   FiDownload,
-  FiGrid,
   FiEdit2,
+  FiGrid,
   FiPlus,
   FiSearch,
   FiTrash2,
   FiUpload,
+  FiUser,
 } from 'react-icons/fi';
-import { FiCheck } from 'react-icons/fi';
-import { PositionBadge, PositionLevelsBadge, SkillBadge } from '../../components/common/Badges';
+import { PositionBadge, SkillBadge } from '../../components/common/Badges';
 import { Button } from '../../components/common/Button';
 import { Card, CardTitle } from '../../components/common/Card';
 import { PlayerFormModal } from '../../components/players/PlayerFormModal';
 import { downloadPlayersTemplate, exportPlayersToExcel, parsePlayersExcel } from '../../lib/export/excel';
 import { usePlayersStore } from '../../store/usePlayersStore';
-import {
-  overallLevel,
-  POSITIONS,
-  POSITION_LABELS,
-  SKILL_LEVELS,
-  type Player,
-  type Position,
-  type SkillLevel,
-} from '../../types';
+import { POSITIONS, POSITION_LABELS, SKILL_LABELS, SKILL_LEVELS, type Player, type Position } from '../../types';
 
 const TARGET_GROUP_SIZE = 6;
 
@@ -64,7 +57,6 @@ export default function JugadoresPage() {
 
   const [search, setSearch] = useState('');
   const [positionFilter, setPositionFilter] = useState<Position | 'all'>('all');
-  const [levelFilter, setLevelFilter] = useState<SkillLevel | 'all'>('all');
   const [modalOpen, setModalOpen] = useState(false);
   const [editing, setEditing] = useState<Player | null>(null);
   const [importFeedback, setImportFeedback] = useState<{ added: number; errors: string[] } | null>(null);
@@ -72,15 +64,12 @@ export default function JugadoresPage() {
 
   const levelTiers = useMemo(() => buildLevelTiers(players), [players]);
 
-  const filtered = useMemo(() => {
-    return players.filter((p) => {
-      if (search && !p.fullName.toLowerCase().includes(search.toLowerCase())) return false;
-      if (positionFilter !== 'all' && p.primaryPosition !== positionFilter && !p.secondaryPositions.includes(positionFilter))
-        return false;
-      if (levelFilter !== 'all' && overallLevel(p) !== levelFilter) return false;
-      return true;
-    });
-  }, [players, search, positionFilter, levelFilter]);
+  function matchesFilters(p: Player) {
+    if (search && !p.fullName.toLowerCase().includes(search.toLowerCase())) return false;
+    if (positionFilter !== 'all' && p.primaryPosition !== positionFilter && !p.secondaryPositions.includes(positionFilter))
+      return false;
+    return true;
+  }
 
   async function handleImportFile(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
@@ -202,94 +191,75 @@ export default function JugadoresPage() {
             </option>
           ))}
         </select>
-        <select
-          value={levelFilter}
-          onChange={(e) => setLevelFilter(e.target.value === 'all' ? 'all' : (Number(e.target.value) as SkillLevel))}
-          className="rounded-lg border border-surface-300 bg-surface-0 px-3 py-2 text-sm text-ink-900 outline-none focus:border-brand-500"
-          title="Filtra por el nivel en la posición principal"
-        >
-          <option value="all">Todos los niveles</option>
-          {SKILL_LEVELS.map((l) => (
-            <option key={l} value={l}>
-              Nivel {l}
-            </option>
-          ))}
-        </select>
       </Card>
 
-      <Card className="overflow-x-auto p-0">
-        <table className="w-full text-sm">
-          <thead>
-            <tr className="border-b border-surface-200 text-left text-xs uppercase tracking-wide text-ink-400">
-              <th className="px-4 py-3">Jugador</th>
-              <th className="px-4 py-3">Posición principal</th>
-              <th className="px-4 py-3">Secundarias</th>
-              <th className="px-4 py-3">Nivel</th>
-              <th className="px-4 py-3">Estado</th>
-              <th className="px-4 py-3 text-right">Acciones</th>
-            </tr>
-          </thead>
-          <tbody>
-            {filtered.map((p) => (
-              <tr key={p.id} className="border-b border-surface-200 last:border-0 hover:bg-surface-50">
-                <td className="px-4 py-3 font-medium text-ink-900">{p.fullName}</td>
-                <td className="px-4 py-3">
-                  <PositionBadge position={p.primaryPosition} />
-                </td>
-                <td className="px-4 py-3">
-                  <div className="flex flex-wrap gap-1">
-                    {p.secondaryPositions.map((pos) => (
-                      <PositionBadge key={pos} position={pos} />
-                    ))}
-                  </div>
-                </td>
-                <td className="px-4 py-3">
-                  <PositionLevelsBadge positionLevels={p.positionLevels} />
-                </td>
-                <td className="px-4 py-3">
-                  <span
-                    className={`rounded-full px-2 py-0.5 text-xs font-medium ${
-                      p.available ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-600'
-                    }`}
+      <div className="space-y-6">
+        {SKILL_LEVELS.map((level, idx) => {
+          const tierPlayers = (levelTiers[idx] ?? []).filter(matchesFilters);
+          if (tierPlayers.length === 0) return null;
+          return (
+            <div key={level}>
+              <div className="mb-3 flex items-baseline gap-3">
+                <p className="font-display text-4xl leading-none text-ink-900">{level}</p>
+                <div>
+                  <p className="text-sm font-semibold text-ink-900">{SKILL_LABELS[level]}</p>
+                  <p className="text-xs text-ink-400">{tierPlayers.length} jugadores</p>
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6">
+                {tierPlayers.map((p) => (
+                  <div
+                    key={p.id}
+                    className="group relative flex flex-col items-center gap-2 rounded-xl border border-surface-200 bg-surface-0 p-3 text-center"
                   >
-                    {p.available ? 'Disponible' : 'No disponible'}
-                  </span>
-                </td>
-                <td className="px-4 py-3">
-                  <div className="flex justify-end gap-2">
-                    <button
-                      onClick={() => {
-                        setEditing(p);
-                        setModalOpen(true);
-                      }}
-                      className="rounded-lg p-2 text-ink-500 hover:bg-surface-100 hover:text-ink-900"
-                      aria-label="Editar"
-                    >
-                      <FiEdit2 />
-                    </button>
-                    <button
-                      onClick={() => {
-                        if (confirm(`¿Eliminar a ${p.fullName}?`)) void deletePlayer(p.id);
-                      }}
-                      className="rounded-lg p-2 text-red-400 hover:bg-red-50 hover:text-red-600"
-                      aria-label="Eliminar"
-                    >
-                      <FiTrash2 />
-                    </button>
+                    <div className="absolute right-1.5 top-1.5 flex gap-0.5 opacity-0 transition group-hover:opacity-100">
+                      <button
+                        onClick={() => {
+                          setEditing(p);
+                          setModalOpen(true);
+                        }}
+                        className="rounded p-1 text-ink-400 hover:bg-surface-100 hover:text-ink-900"
+                        aria-label="Editar"
+                      >
+                        <FiEdit2 className="text-xs" />
+                      </button>
+                      <button
+                        onClick={() => {
+                          if (confirm(`¿Eliminar a ${p.fullName}?`)) void deletePlayer(p.id);
+                        }}
+                        className="rounded p-1 text-red-400 hover:bg-red-50"
+                        aria-label="Eliminar"
+                      >
+                        <FiTrash2 className="text-xs" />
+                      </button>
+                    </div>
+                    <div className="flex h-14 w-14 items-center justify-center overflow-hidden rounded-full border border-surface-200 bg-surface-100 text-xl text-ink-400">
+                      {p.photoUrl ? (
+                        <img src={p.photoUrl} alt="" className="h-full w-full object-cover" />
+                      ) : (
+                        <FiUser />
+                      )}
+                    </div>
+                    <p className="w-full truncate text-sm font-medium text-ink-900">{p.fullName}</p>
+                    <PositionBadge position={p.primaryPosition} />
+                    {!p.available && (
+                      <span className="rounded-full bg-red-50 px-2 py-0.5 text-[10px] font-medium text-red-600">
+                        No disponible
+                      </span>
+                    )}
                   </div>
-                </td>
-              </tr>
-            ))}
-            {filtered.length === 0 && (
-              <tr>
-                <td colSpan={6} className="px-4 py-10 text-center text-ink-400">
-                  No hay jugadores que coincidan con el filtro.
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
-      </Card>
+                ))}
+              </div>
+            </div>
+          );
+        })}
+        {players.length > 0 && levelTiers.every((tier) => tier.filter(matchesFilters).length === 0) && (
+          <Card className="py-10 text-center text-sm text-ink-400">No hay jugadores que coincidan con el filtro.</Card>
+        )}
+        {players.length === 0 && (
+          <Card className="py-10 text-center text-sm text-ink-400">Todavía no hay jugadores registrados.</Card>
+        )}
+      </div>
 
       <PlayerFormModal
         open={modalOpen}

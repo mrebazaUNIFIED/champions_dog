@@ -1,4 +1,4 @@
-import { POSITION_LABELS, POSITIONS, SKILL_LABELS, type Position, type SkillLevel } from '../../types';
+import { MATCH_STATUS_LABELS, POSITION_LABELS, POSITIONS, SKILL_LABELS, type MatchStatus, type Position, type SkillLevel } from '../../types';
 
 const POSITION_SHORT: Record<Position, string> = {
   arquero: 'ARQ',
@@ -35,6 +35,32 @@ export function SkillBadge({ level, className = '' }: { level: SkillLevel; class
   return (
     <span className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-medium ${SKILL_COLORS[level]} ${className}`}>
       Nivel {level} · {SKILL_LABELS[level]}
+    </span>
+  );
+}
+
+export function MatchStatusBadge({ status, className = '' }: { status: MatchStatus; className?: string }) {
+  if (status === 'live') {
+    return (
+      <span className={`inline-flex items-center gap-1.5 rounded-full bg-green-50 px-2.5 py-0.5 text-xs font-semibold text-green-700 ${className}`}>
+        <span className="relative flex h-2 w-2">
+          <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-green-500 opacity-75" />
+          <span className="relative inline-flex h-2 w-2 rounded-full bg-green-600" />
+        </span>
+        {MATCH_STATUS_LABELS.live}
+      </span>
+    );
+  }
+  if (status === 'finished') {
+    return (
+      <span className={`inline-flex items-center rounded-full bg-pitch-900 px-2.5 py-0.5 text-xs font-semibold text-white ${className}`}>
+        {MATCH_STATUS_LABELS.finished}
+      </span>
+    );
+  }
+  return (
+    <span className={`inline-flex items-center rounded-full bg-gray-100 px-2.5 py-0.5 text-xs font-semibold text-gray-600 ${className}`}>
+      {MATCH_STATUS_LABELS.scheduled}
     </span>
   );
 }

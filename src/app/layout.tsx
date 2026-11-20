@@ -7,8 +7,8 @@ const inter = Inter({ subsets: ['latin'], variable: '--font-inter' });
 const bebasNeue = Bebas_Neue({ subsets: ['latin'], weight: ['400'], variable: '--font-bebas' });
 
 export const metadata: Metadata = {
-  title: '4.º Campeonato Perritos Locos — Selección de Equipos',
-  description: 'Selección y distribución automática de jugadores en 6 equipos equilibrados.',
+  title: '4.º Campeonato Perritos Locos',
+  description: 'Gestión del torneo: equipos, partidos, clasificación, rankings y jugadores.',
   icons: {
     icon: '/logo.jpg',
     shortcut: '/logo.jpg',

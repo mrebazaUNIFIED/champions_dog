@@ -1,12 +1,13 @@
 import type { IconType } from 'react-icons';
 import {
+  FiAward,
   FiBarChart2,
-  FiCheckSquare,
-  FiClipboard,
   FiSettings,
   FiClock,
   FiShield,
   FiHome,
+  FiSliders,
+  FiTrendingUp,
   FiUsers,
 } from 'react-icons/fi';
 
@@ -17,14 +18,15 @@ export interface NavItem {
   group: string;
 }
 
-export const NAV_GROUPS = ['Gestión', 'Competencia', 'Sistema'] as const;
+export const NAV_GROUPS = ['Gestión', 'Torneo', 'Competencia', 'Sistema'] as const;
 
 export const NAV_ITEMS: NavItem[] = [
-  { href: '/', label: 'Dashboard', icon: FiHome, group: 'Gestión' },
+  { href: '/', label: 'Inicio', icon: FiHome, group: 'Gestión' },
   { href: '/jugadores', label: 'Jugadores', icon: FiUsers, group: 'Gestión' },
-  { href: '/votacion', label: 'Votación de niveles', icon: FiCheckSquare, group: 'Gestión' },
-  { href: '/campeonato', label: 'Configuración del campeonato', icon: FiShield, group: 'Competencia' },
-  { href: '/seleccion', label: 'Selección de equipos', icon: FiClipboard, group: 'Competencia' },
+  { href: '/equipos', label: 'Equipos', icon: FiShield, group: 'Torneo' },
+  { href: '/clasificacion', label: 'Clasificación', icon: FiTrendingUp, group: 'Torneo' },
+  { href: '/rankings', label: 'Rankings', icon: FiAward, group: 'Torneo' },
+  { href: '/campeonato', label: 'Configuración del campeonato', icon: FiSliders, group: 'Competencia' },
   { href: '/comparacion', label: 'Comparación de equipos', icon: FiBarChart2, group: 'Competencia' },
   { href: '/historial', label: 'Historial', icon: FiClock, group: 'Competencia' },
   { href: '/configuracion', label: 'Configuración', icon: FiSettings, group: 'Sistema' },

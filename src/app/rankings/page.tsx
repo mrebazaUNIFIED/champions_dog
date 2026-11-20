@@ -1,0 +1,175 @@
+'use client';
+
+import { useEffect, useState } from 'react';
+import { FiAward, FiPlus, FiTrash2 } from 'react-icons/fi';
+import { Button } from '../../components/common/Button';
+import { Card, CardTitle } from '../../components/common/Card';
+import { useAwardsStore } from '../../store/useAwardsStore';
+import { useMatchesStore } from '../../store/useMatchesStore';
+import { usePlayersStore } from '../../store/usePlayersStore';
+import { useTeamsStore } from '../../store/useTeamsStore';
+import { cardTally, topScorers } from '../../types';
+
+export default function RankingsPage() {
+  const matches = useMatchesStore((s) => s.matches);
+  const loadMatches = useMatchesStore((s) => s.load);
+  const matchesLoaded = useMatchesStore((s) => s.loaded);
+
+  const teams = useTeamsStore((s) => s.teams);
+  const loadTeams = useTeamsStore((s) => s.load);
+  const teamsLoaded = useTeamsStore((s) => s.loaded);
+
+  const players = usePlayersStore((s) => s.players);
+  const loadPlayers = usePlayersStore((s) => s.load);
+  const playersLoaded = usePlayersStore((s) => s.loaded);
+
+  const awards = useAwardsStore((s) => s.awards);
+  const loadAwards = useAwardsStore((s) => s.load);
+  const awardsLoaded = useAwardsStore((s) => s.loaded);
+  const addAward = useAwardsStore((s) => s.addAward);
+  const deleteAward = useAwardsStore((s) => s.deleteAward);
+
+  useEffect(() => {
+    if (!matchesLoaded) void loadMatches();
+  }, [matchesLoaded, loadMatches]);
+  useEffect(() => {
+    if (!teamsLoaded) void loadTeams();
+  }, [teamsLoaded, loadTeams]);
+  useEffect(() => {
+    if (!playersLoaded) void loadPlayers();
+  }, [playersLoaded, loadPlayers]);
+  useEffect(() => {
+    if (!awardsLoaded) void loadAwards();
+  }, [awardsLoaded, loadAwards]);
+
+  const scorers = topScorers(matches);
+  const cards = cardTally(matches);
+
+  function playerName(id: string) {
+    return players.find((p) => p.id === id)?.fullName ?? '—';
+  }
+  function teamName(id: string) {
+    return teams.find((t) => t.id === id)?.name ?? '—';
+  }
+
+  const [title, setTitle] = useState('');
+  const [winnerName, setWinnerName] = useState('');
+  const [note, setNote] = useState('');
+
+  async function handleAddAward(e: React.FormEvent) {
+    e.preventDefault();
+    if (!title.trim()) return;
+    await addAward({ title: title.trim(), winnerName: winnerName.trim() || undefined, note: note.trim() || undefined });
+    setTitle('');
+    setWinnerName('');
+    setNote('');
+  }
+
+  return (
+    <div className="space-y-6">
+      <div>
+        <h2 className="font-display text-2xl font-bold text-ink-900">Rankings</h2>
+        <p className="text-sm text-ink-500">Goleadores, sanciones y premios del torneo.</p>
+      </div>
+
+      <div className="grid gap-6 lg:grid-cols-2">
+        <Card className="p-0">
+          <div className="p-5 pb-0">
+            <CardTitle>Goleadores</CardTitle>
+          </div>
+          <div className="mt-3 divide-y divide-surface-200">
+            {scorers.length === 0 && <p className="px-5 py-6 text-sm text-ink-400">Todavía no hay goles cargados.</p>}
+            {scorers.map((s, i) => (
+              <div key={s.playerId} className="flex items-center gap-3 px-5 py-3">
+                <span className="w-5 text-sm font-semibold text-ink-400">{i + 1}</span>
+                <div className="min-w-0 flex-1">
+                  <p className="truncate text-sm font-medium text-ink-900">{playerName(s.playerId)}</p>
+                  <p className="text-xs text-ink-400">{teamName(s.teamId)}</p>
+                </div>
+                <p className="font-display text-xl text-ink-900">{s.count}</p>
+              </div>
+            ))}
+          </div>
+        </Card>
+
+        <Card className="p-0">
+          <div className="p-5 pb-0">
+            <CardTitle>Sanciones</CardTitle>
+          </div>
+          <div className="mt-3 divide-y divide-surface-200">
+            {cards.length === 0 && <p className="px-5 py-6 text-sm text-ink-400">Todavía no hay tarjetas cargadas.</p>}
+            {cards.map((c) => (
+              <div key={c.playerId} className="flex items-center gap-3 px-5 py-3">
+                <div className="min-w-0 flex-1">
+                  <p className="truncate text-sm font-medium text-ink-900">{playerName(c.playerId)}</p>
+                  <p className="text-xs text-ink-400">{teamName(c.teamId)}</p>
+                </div>
+                <div className="flex shrink-0 gap-2 text-sm">
+                  {c.yellow > 0 && (
+                    <span className="rounded bg-gray-100 px-2 py-0.5 font-semibold text-gray-700">🟨 {c.yellow}</span>
+                  )}
+                  {c.red > 0 && <span className="rounded bg-red-50 px-2 py-0.5 font-semibold text-red-700">🟥 {c.red}</span>}
+                </div>
+              </div>
+            ))}
+          </div>
+        </Card>
+      </div>
+
+      <Card>
+        <CardTitle>Premios</CardTitle>
+        <p className="mt-1 text-sm text-ink-500">MVP y cualquier otro reconocimiento del torneo.</p>
+
+        <form onSubmit={handleAddAward} className="mt-4 grid gap-3 sm:grid-cols-[1fr_1fr_1fr_auto]">
+          <input
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            placeholder="Título (ej. MVP del torneo)"
+            required
+            className="rounded-lg border border-surface-300 bg-surface-0 px-3 py-2 text-sm text-ink-900 outline-none focus:border-brand-500"
+          />
+          <input
+            value={winnerName}
+            onChange={(e) => setWinnerName(e.target.value)}
+            placeholder="Ganador"
+            className="rounded-lg border border-surface-300 bg-surface-0 px-3 py-2 text-sm text-ink-900 outline-none focus:border-brand-500"
+          />
+          <input
+            value={note}
+            onChange={(e) => setNote(e.target.value)}
+            placeholder="Nota (opcional)"
+            className="rounded-lg border border-surface-300 bg-surface-0 px-3 py-2 text-sm text-ink-900 outline-none focus:border-brand-500"
+          />
+          <Button type="submit">
+            <FiPlus /> Agregar
+          </Button>
+        </form>
+
+        <div className="mt-4 space-y-2">
+          {awards.length === 0 && <p className="text-sm text-ink-400">Todavía no cargaste ningún premio.</p>}
+          {awards.map((a) => (
+            <div key={a.id} className="flex items-center justify-between gap-3 rounded-lg border border-surface-200 px-3 py-2">
+              <div className="flex items-center gap-2">
+                <FiAward className="text-gold-500" />
+                <div>
+                  <p className="text-sm font-medium text-ink-900">
+                    {a.title}
+                    {a.winnerName ? ` — ${a.winnerName}` : ''}
+                  </p>
+                  {a.note && <p className="text-xs text-ink-400">{a.note}</p>}
+                </div>
+              </div>
+              <button
+                onClick={() => void deleteAward(a.id)}
+                className="rounded-lg p-2 text-red-400 hover:bg-red-50 hover:text-red-600"
+                aria-label="Eliminar"
+              >
+                <FiTrash2 />
+              </button>
+            </div>
+          ))}
+        </div>
+      </Card>
+    </div>
+  );
+}

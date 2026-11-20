@@ -1,25 +1,45 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { FiCheckCircle, FiCloud, FiDatabase, FiSave } from 'react-icons/fi';
+import { FiCheckCircle, FiCloud, FiDatabase, FiLoader, FiSave } from 'react-icons/fi';
 import { Button } from '../../components/common/Button';
 import { Card, CardTitle } from '../../components/common/Card';
 import { isSupabaseConfigured } from '../../lib/supabase/client';
+import { uploadTournamentBanner } from '../../lib/supabase/storage';
 import { useConfigStore } from '../../store/useConfigStore';
-import { SKILL_LABELS, SKILL_LEVELS, type SkillLevel } from '../../types';
+import { useTournamentInfoStore } from '../../store/useTournamentInfoStore';
+import { SKILL_LABELS, SKILL_LEVELS, TOURNAMENT_STATUS_LABELS, type SkillLevel, type TournamentStatus } from '../../types';
 
 export default function ConfiguracionPage() {
   const config = useConfigStore((s) => s.config);
   const save = useConfigStore((s) => s.save);
 
+  const tournamentInfo = useTournamentInfoStore((s) => s.info);
+  const tournamentInfoLoaded = useTournamentInfoStore((s) => s.loaded);
+  const loadTournamentInfo = useTournamentInfoStore((s) => s.load);
+  const saveTournamentInfo = useTournamentInfoStore((s) => s.save);
+
   const [scoring, setScoring] = useState(config.scoring);
   const [teams, setTeams] = useState(config.teamDefaults);
   const [saved, setSaved] = useState(false);
+
+  const [tournamentForm, setTournamentForm] = useState(tournamentInfo);
+  const [tournamentSaved, setTournamentSaved] = useState(false);
+  const [uploadingBanner, setUploadingBanner] = useState(false);
+  const [bannerError, setBannerError] = useState<string | null>(null);
 
   useEffect(() => {
     setScoring(config.scoring);
     setTeams(config.teamDefaults);
   }, [config.scoring, config.teamDefaults]);
+
+  useEffect(() => {
+    if (!tournamentInfoLoaded) void loadTournamentInfo();
+  }, [tournamentInfoLoaded, loadTournamentInfo]);
+
+  useEffect(() => {
+    setTournamentForm(tournamentInfo);
+  }, [tournamentInfo]);
 
   async function handleSave() {
     await save({ ...config, scoring, teamDefaults: teams });
@@ -27,12 +47,120 @@ export default function ConfiguracionPage() {
     setTimeout(() => setSaved(false), 2500);
   }
 
+  async function handleSaveTournament() {
+    await saveTournamentInfo(tournamentForm);
+    setTournamentSaved(true);
+    setTimeout(() => setTournamentSaved(false), 2500);
+  }
+
+  async function handleBanner(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setBannerError(null);
+
+    if (isSupabaseConfigured) {
+      setUploadingBanner(true);
+      try {
+        const url = await uploadTournamentBanner(file);
+        setTournamentForm((f) => ({ ...f, bannerUrl: url }));
+      } catch (err) {
+        setBannerError(err instanceof Error ? err.message : 'No se pudo subir el banner.');
+      } finally {
+        setUploadingBanner(false);
+      }
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = () => setTournamentForm((f) => ({ ...f, bannerUrl: reader.result as string }));
+    reader.readAsDataURL(file);
+  }
+
   return (
     <div className="space-y-6">
       <div>
         <h2 className="font-display text-2xl font-bold text-ink-900">Configuración general</h2>
-        <p className="text-sm text-ink-500">Puntuación por nivel, nombres/colores por defecto de los equipos y estado de persistencia.</p>
+        <p className="text-sm text-ink-500">Datos del torneo, puntuación por nivel, nombres/colores por defecto de los equipos y estado de persistencia.</p>
       </div>
+
+      <Card>
+        <CardTitle>Información del torneo</CardTitle>
+        <p className="mt-1 text-sm text-ink-500">Se muestra en el Inicio: nombre, período, estado, organizador y banner.</p>
+
+        <div className="mt-4 flex items-center gap-4">
+          <div className="flex h-16 w-28 shrink-0 items-center justify-center overflow-hidden rounded-lg border border-surface-300 bg-surface-100 text-ink-400">
+            {uploadingBanner ? (
+              <FiLoader className="animate-spin text-xl text-brand-400" />
+            ) : tournamentForm.bannerUrl ? (
+              <img src={tournamentForm.bannerUrl} alt="" className="h-full w-full object-cover" />
+            ) : (
+              <span className="text-xs">Sin banner</span>
+            )}
+          </div>
+          <label className="text-sm">
+            <span className="mb-1 block text-ink-500">Banner (opcional)</span>
+            <input type="file" accept="image/*" onChange={handleBanner} disabled={uploadingBanner} className="text-xs text-ink-500" />
+            {bannerError && <p className="mt-1 text-xs text-red-600">{bannerError}</p>}
+          </label>
+        </div>
+
+        <div className="mt-4 grid gap-4 sm:grid-cols-2">
+          <div>
+            <label className="mb-1 block text-sm text-ink-500">Nombre del torneo</label>
+            <input
+              value={tournamentForm.name}
+              onChange={(e) => setTournamentForm((f) => ({ ...f, name: e.target.value }))}
+              className="w-full rounded-lg border border-surface-300 bg-surface-0 px-3 py-2 text-ink-900 outline-none focus:border-brand-500"
+            />
+          </div>
+          <div>
+            <label className="mb-1 block text-sm text-ink-500">Organizador</label>
+            <input
+              value={tournamentForm.organizer ?? ''}
+              onChange={(e) => setTournamentForm((f) => ({ ...f, organizer: e.target.value }))}
+              className="w-full rounded-lg border border-surface-300 bg-surface-0 px-3 py-2 text-ink-900 outline-none focus:border-brand-500"
+            />
+          </div>
+          <div>
+            <label className="mb-1 block text-sm text-ink-500">Inicio</label>
+            <input
+              type="date"
+              value={tournamentForm.periodStart ?? ''}
+              onChange={(e) => setTournamentForm((f) => ({ ...f, periodStart: e.target.value }))}
+              className="w-full rounded-lg border border-surface-300 bg-surface-0 px-3 py-2 text-ink-900 outline-none focus:border-brand-500"
+            />
+          </div>
+          <div>
+            <label className="mb-1 block text-sm text-ink-500">Fin</label>
+            <input
+              type="date"
+              value={tournamentForm.periodEnd ?? ''}
+              onChange={(e) => setTournamentForm((f) => ({ ...f, periodEnd: e.target.value }))}
+              className="w-full rounded-lg border border-surface-300 bg-surface-0 px-3 py-2 text-ink-900 outline-none focus:border-brand-500"
+            />
+          </div>
+          <div>
+            <label className="mb-1 block text-sm text-ink-500">Estado</label>
+            <select
+              value={tournamentForm.status}
+              onChange={(e) => setTournamentForm((f) => ({ ...f, status: e.target.value as TournamentStatus }))}
+              className="w-full rounded-lg border border-surface-300 bg-surface-0 px-3 py-2 text-ink-900 outline-none focus:border-brand-500"
+            >
+              {Object.entries(TOURNAMENT_STATUS_LABELS).map(([value, label]) => (
+                <option key={value} value={value}>
+                  {label}
+                </option>
+              ))}
+            </select>
+          </div>
+        </div>
+
+        <div className="mt-4 flex justify-end">
+          <Button onClick={handleSaveTournament} disabled={uploadingBanner}>
+            {tournamentSaved ? <FiCheckCircle /> : <FiSave />} {tournamentSaved ? 'Guardado' : 'Guardar información del torneo'}
+          </Button>
+        </div>
+      </Card>
 
       <Card>
         <CardTitle>Sistema de puntuación por nivel</CardTitle>
