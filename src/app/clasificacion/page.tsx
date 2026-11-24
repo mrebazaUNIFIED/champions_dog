@@ -58,12 +58,27 @@ export default function ClasificacionPage() {
     if (!matchesLoaded) void loadMatches();
   }, [matchesLoaded, loadMatches]);
 
+  // Al cargar, si existe "Fecha 1" la dejamos seleccionada por defecto en vez de "Todas las fases".
+  useEffect(() => {
+    if (matchesLoaded && matches.some((m) => m.phase === 'Fecha 1')) {
+      setPhaseFilter((current) => (current === 'all' ? 'Fecha 1' : current));
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [matchesLoaded]);
+
   const standings = useMemo(() => computeStandings(teams, matches), [teams, matches]);
   const phases = useMemo(() => [...new Set(matches.map((m) => m.phase))], [matches]);
   const filteredMatches = useMemo(
     () => matches.filter((m) => phaseFilter === 'all' || m.phase === phaseFilter),
     [matches, phaseFilter],
   );
+  const nextFechaNumber = useMemo(() => {
+    const numbers = matches
+      .filter((m) => m.stage === 'fecha')
+      .map((m) => Number(/^Fecha (\d+)$/.exec(m.phase)?.[1]))
+      .filter((n) => Number.isFinite(n));
+    return numbers.length > 0 ? Math.max(...numbers) + 1 : 1;
+  }, [matches]);
 
   function team(id: string) {
     return teams.find((t) => t.id === id);
@@ -180,8 +195,15 @@ export default function ClasificacionPage() {
                   onClick={() => setSelectedMatchId(m.id)}
                   className="w-full rounded-xl border border-white/10 bg-surface-container/60 p-3 text-left transition hover:border-white/25"
                 >
-                  <div className="mb-1 flex items-center justify-between">
-                    <span className="text-[11px] text-white/40">{m.phase}</span>
+                  <div className="mb-1 flex items-center justify-between gap-2">
+                    <span className="flex min-w-0 items-center gap-1.5 text-[11px] text-white/40">
+                      {m.stage === 'eliminatoria' && (
+                        <span className="rounded bg-secondary-container/20 px-1 py-0.5 font-label text-[9px] text-secondary-fixed">
+                          ELIM
+                        </span>
+                      )}
+                      <span className="truncate">{m.phase}</span>
+                    </span>
                     <MatchStatusBadge status={m.status} />
                   </div>
                   <div className="flex items-center justify-between gap-2 text-sm text-white">
@@ -206,7 +228,7 @@ export default function ClasificacionPage() {
         open={addOpen}
         onClose={() => setAddOpen(false)}
         teams={teams}
-        defaultPhase={phases[phases.length - 1] ?? 'Fase 1'}
+        nextFechaNumber={nextFechaNumber}
         onSubmit={async (input) => {
           await addMatch(input);
         }}

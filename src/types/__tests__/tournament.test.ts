@@ -21,7 +21,8 @@ function makeMatch(overrides: Partial<Match> & Pick<Match, 'homeTeamId' | 'awayT
   const now = new Date().toISOString();
   return {
     id: `m-${counter}`,
-    phase: 'Fase 1',
+    stage: 'fecha',
+    phase: 'Fecha 1',
     status: 'scheduled',
     homeLineup: [],
     awayLineup: [],
@@ -82,6 +83,26 @@ describe('computeStandings', () => {
     expect(byId[b.id]).toMatchObject({ points: 0, played: 1, won: 0, drawn: 0, lost: 1 });
     expect(byId[c.id]).toMatchObject({ points: 1, played: 1, won: 0, drawn: 1, lost: 0 });
     expect(standings[0].teamId).toBe(a.id);
+  });
+
+  it('ignora los partidos de eliminatoria, aunque estén finalizados', () => {
+    const a = makeTeam();
+    const b = makeTeam();
+
+    const knockout = makeMatch({
+      homeTeamId: a.id,
+      awayTeamId: b.id,
+      stage: 'eliminatoria',
+      phase: 'Final',
+      status: 'finished',
+      events: [{ id: 'e1', type: 'goal', teamId: a.id, playerId: 'p1', createdAt: '' }],
+    });
+
+    const standings = computeStandings([a, b], [knockout]);
+    const byId = Object.fromEntries(standings.map((s) => [s.teamId, s]));
+
+    expect(byId[a.id]).toMatchObject({ points: 0, played: 0 });
+    expect(byId[b.id]).toMatchObject({ points: 0, played: 0 });
   });
 });
 

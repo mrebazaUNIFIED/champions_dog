@@ -3,18 +3,20 @@
 import { useEffect, useState } from 'react';
 import { Button } from '../common/Button';
 import { Modal } from '../common/Modal';
-import type { MatchInput, TournamentTeam } from '../../types';
+import { KNOCKOUT_ROUND_PRESETS, type MatchInput, type MatchStage, type TournamentTeam } from '../../types';
 
 interface Props {
   open: boolean;
   onClose: () => void;
   onSubmit: (input: MatchInput) => Promise<void>;
   teams: TournamentTeam[];
-  defaultPhase: string;
+  nextFechaNumber: number;
 }
 
-export function AddMatchModal({ open, onClose, onSubmit, teams, defaultPhase }: Props) {
-  const [phase, setPhase] = useState(defaultPhase);
+export function AddMatchModal({ open, onClose, onSubmit, teams, nextFechaNumber }: Props) {
+  const [stage, setStage] = useState<MatchStage>('fecha');
+  const [fechaNumber, setFechaNumber] = useState(nextFechaNumber);
+  const [round, setRound] = useState(KNOCKOUT_ROUND_PRESETS[0]);
   const [homeTeamId, setHomeTeamId] = useState('');
   const [awayTeamId, setAwayTeamId] = useState('');
   const [scheduledAt, setScheduledAt] = useState('');
@@ -23,13 +25,15 @@ export function AddMatchModal({ open, onClose, onSubmit, teams, defaultPhase }: 
 
   useEffect(() => {
     if (open) {
-      setPhase(defaultPhase);
+      setStage('fecha');
+      setFechaNumber(nextFechaNumber);
+      setRound(KNOCKOUT_ROUND_PRESETS[0]);
       setHomeTeamId(teams[0]?.id ?? '');
       setAwayTeamId(teams[1]?.id ?? '');
       setScheduledAt('');
       setError(null);
     }
-  }, [open, defaultPhase, teams]);
+  }, [open, nextFechaNumber, teams]);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -40,7 +44,8 @@ export function AddMatchModal({ open, onClose, onSubmit, teams, defaultPhase }: 
     setSaving(true);
     try {
       await onSubmit({
-        phase: phase.trim() || 'Fase 1',
+        stage,
+        phase: stage === 'fecha' ? `Fecha ${fechaNumber}` : round.trim() || KNOCKOUT_ROUND_PRESETS[0],
         homeTeamId,
         awayTeamId,
         status: 'scheduled',
@@ -58,14 +63,62 @@ export function AddMatchModal({ open, onClose, onSubmit, teams, defaultPhase }: 
     <Modal open={open} onClose={onClose} title="Agregar partido">
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
-          <label className="mb-1 block text-sm text-on-surface-variant">Fase</label>
-          <input
-            value={phase}
-            onChange={(e) => setPhase(e.target.value)}
-            placeholder="Fase 1"
-            className="w-full rounded-lg border border-white/15 bg-surface-container-low px-3 py-2 text-on-surface outline-none focus:border-primary-container"
-          />
+          <label className="mb-1 block text-sm text-on-surface-variant">Etapa</label>
+          <div className="grid grid-cols-2 gap-2">
+            <button
+              type="button"
+              onClick={() => setStage('fecha')}
+              className={`rounded-lg border px-3 py-2 text-sm font-medium transition ${
+                stage === 'fecha'
+                  ? 'border-primary-container bg-primary-container/15 text-primary-fixed-dim'
+                  : 'border-white/15 text-on-surface-variant hover:bg-surface-container-low'
+              }`}
+            >
+              Fecha de liga
+            </button>
+            <button
+              type="button"
+              onClick={() => setStage('eliminatoria')}
+              className={`rounded-lg border px-3 py-2 text-sm font-medium transition ${
+                stage === 'eliminatoria'
+                  ? 'border-secondary-container bg-secondary-container/15 text-secondary-fixed'
+                  : 'border-white/15 text-on-surface-variant hover:bg-surface-container-low'
+              }`}
+            >
+              Eliminatoria
+            </button>
+          </div>
         </div>
+
+        {stage === 'fecha' ? (
+          <div>
+            <label className="mb-1 block text-sm text-on-surface-variant">N.º de fecha</label>
+            <input
+              type="number"
+              min={1}
+              value={fechaNumber}
+              onChange={(e) => setFechaNumber(Math.max(1, Number(e.target.value) || 1))}
+              className="w-full rounded-lg border border-white/15 bg-surface-container-low px-3 py-2 text-on-surface outline-none focus:border-primary-container"
+            />
+            <p className="mt-1 text-xs text-on-surface-variant">Suma a la tabla de posiciones.</p>
+          </div>
+        ) : (
+          <div>
+            <label className="mb-1 block text-sm text-on-surface-variant">Ronda</label>
+            <select
+              value={round}
+              onChange={(e) => setRound(e.target.value)}
+              className="w-full rounded-lg border border-white/15 bg-surface-container-low px-3 py-2 text-on-surface outline-none focus:border-primary-container"
+            >
+              {KNOCKOUT_ROUND_PRESETS.map((r) => (
+                <option key={r} value={r}>
+                  {r}
+                </option>
+              ))}
+            </select>
+            <p className="mt-1 text-xs text-on-surface-variant">No suma a la tabla de posiciones.</p>
+          </div>
+        )}
 
         <div className="grid grid-cols-2 gap-3">
           <div>

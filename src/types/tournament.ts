@@ -8,6 +8,15 @@ export interface TournamentTeam {
   updatedAt: string;
 }
 
+export const DEFAULT_TEAM_COLORS = [
+  '#16a34a', // verde
+  '#ef4444', // rojo
+  '#64748b', // gris
+  '#15803d', // verde oscuro
+  '#991b1b', // rojo oscuro
+  '#334155', // gris oscuro
+];
+
 export type MatchStatus = 'scheduled' | 'live' | 'finished';
 export type MatchEventType = 'goal' | 'yellow' | 'red';
 
@@ -16,6 +25,17 @@ export const MATCH_STATUS_LABELS: Record<MatchStatus, string> = {
   live: 'En vivo',
   finished: 'Finalizado',
 };
+
+/** Etapa del campeonato: fechas de liga (suman a la tabla de posiciones) o eliminatorias
+ * (cuartos, semis, final... se juegan aparte y no afectan la tabla). */
+export type MatchStage = 'fecha' | 'eliminatoria';
+
+export const MATCH_STAGE_LABELS: Record<MatchStage, string> = {
+  fecha: 'Fecha de liga',
+  eliminatoria: 'Eliminatoria',
+};
+
+export const KNOCKOUT_ROUND_PRESETS = ['Cuartos de Final', 'Semifinal', 'Tercer puesto', 'Final'];
 
 export interface MatchEvent {
   id: string;
@@ -28,6 +48,7 @@ export interface MatchEvent {
 
 export interface Match {
   id: string;
+  stage: MatchStage;
   phase: string;
   homeTeamId: string;
   awayTeamId: string;
@@ -104,7 +125,8 @@ export interface StandingRow {
   percentage: number;
 }
 
-/** Tabla de posiciones, solo a partir de partidos finalizados. 3 puntos por victoria, 1 por empate. */
+/** Tabla de posiciones, solo a partir de partidos de fecha de liga ya finalizados (las
+ * eliminatorias se juegan aparte y no suman). 3 puntos por victoria, 1 por empate. */
 export function computeStandings(teams: TournamentTeam[], matches: Match[]): StandingRow[] {
   const rows = new Map<string, StandingRow>();
   for (const team of teams) {
@@ -123,7 +145,7 @@ export function computeStandings(teams: TournamentTeam[], matches: Match[]): Sta
   }
 
   for (const match of matches) {
-    if (match.status !== 'finished') continue;
+    if (match.status !== 'finished' || match.stage !== 'fecha') continue;
     const home = rows.get(match.homeTeamId);
     const away = rows.get(match.awayTeamId);
     if (!home || !away) continue;
