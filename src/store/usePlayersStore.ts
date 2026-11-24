@@ -1,7 +1,7 @@
 import { v4 as uuid } from 'uuid';
 import { create } from 'zustand';
 import { repository } from '../lib/data';
-import type { Player, PlayerInput, Position, SkillLevel } from '../types';
+import type { Player, PlayerInput } from '../types';
 
 interface PlayersState {
   players: Player[];
@@ -13,16 +13,11 @@ interface PlayersState {
   updatePlayer: (id: string, patch: Partial<PlayerInput>) => Promise<void>;
   deletePlayer: (id: string) => Promise<void>;
   importPlayers: (inputs: PlayerInput[]) => Promise<number>;
-  /** Aplica el nivel de UNA posición directo en la base (ver DataRepository.applyPositionLevel):
-   * a diferencia de updatePlayer, nunca lee-modifica-escribe positionLevels completo, así que
-   * es seguro aunque otro votante esté aplicando el nivel de otra posición del mismo jugador
-   * en simultáneo. */
-  applyPositionLevel: (id: string, position: Position, level: SkillLevel) => Promise<void>;
 }
 
-// La votación dispara varios updatePlayer seguidos para el mismo jugador (uno por posición
-// calificada). Sin serializar, dos escrituras en vuelo leen el mismo estado viejo antes de
-// que la primera termine de guardar, y la segunda la pisa perdiendo ese cambio.
+// Serializa las escrituras: sin esto, dos updatePlayer casi simultáneos sobre el mismo
+// jugador podrían leer el mismo estado viejo antes de que el primero termine de guardar,
+// y el segundo lo pisaría perdiendo ese cambio.
 let writeQueue: Promise<unknown> = Promise.resolve();
 
 function enqueue<T>(run: () => Promise<T>): Promise<T> {
@@ -79,13 +74,4 @@ export const usePlayersStore = create<PlayersState>((set, get) => ({
       set({ players: [...get().players, ...newPlayers] });
       return newPlayers.length;
     }),
-
-  applyPositionLevel: async (id, position, level) => {
-    await repository.applyPositionLevel(id, position, level);
-    set({
-      players: get().players.map((p) =>
-        p.id === id ? { ...p, positionLevels: { ...p.positionLevels, [position]: level }, updatedAt: new Date().toISOString() } : p,
-      ),
-    });
-  },
 }));

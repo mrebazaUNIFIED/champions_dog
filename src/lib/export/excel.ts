@@ -1,13 +1,4 @@
-import {
-  defaultPositionLevels,
-  POSITION_LABELS,
-  POSITIONS,
-  type Player,
-  type PlayerInput,
-  type Position,
-  type SelectionResult,
-  type SkillLevel,
-} from '../../types';
+import { POSITION_LABELS, type Player, type PlayerInput, type Position, type SkillLevel } from '../../types';
 
 // xlsx y file-saver se cargan solo cuando realmente se exporta/importa algo,
 // para no sumarlas al bundle inicial de las páginas que usan este módulo.
@@ -24,13 +15,6 @@ const POSITION_BY_LABEL: Record<string, Position> = {
   defensa: 'defensa',
   mediocampista: 'mediocampista',
   delantero: 'delantero',
-};
-
-const LEVEL_COLUMN: Record<Position, string> = {
-  arquero: 'Nivel Arquero',
-  defensa: 'Nivel Defensa',
-  mediocampista: 'Nivel Medio',
-  delantero: 'Nivel Delantero',
 };
 
 function parsePosition(value: unknown): Position | null {
@@ -62,16 +46,13 @@ export async function exportPlayersToExcel(players: Player[], filename = 'jugado
     'Nombre completo': p.fullName,
     'Posición principal': POSITION_LABELS[p.primaryPosition],
     'Posiciones secundarias': p.secondaryPositions.map((pos) => POSITION_LABELS[pos]).join(', '),
-    [LEVEL_COLUMN.arquero]: p.positionLevels.arquero,
-    [LEVEL_COLUMN.defensa]: p.positionLevels.defensa,
-    [LEVEL_COLUMN.mediocampista]: p.positionLevels.mediocampista,
-    [LEVEL_COLUMN.delantero]: p.positionLevels.delantero,
+    Nivel: p.level,
     Disponible: p.available ? 'Sí' : 'No',
     Observaciones: p.notes ?? '',
   }));
 
   const sheet = XLSX.utils.json_to_sheet(rows);
-  sheet['!cols'] = [{ wch: 28 }, { wch: 18 }, { wch: 26 }, { wch: 10 }, { wch: 10 }, { wch: 10 }, { wch: 10 }, { wch: 12 }, { wch: 30 }];
+  sheet['!cols'] = [{ wch: 28 }, { wch: 18 }, { wch: 26 }, { wch: 10 }, { wch: 12 }, { wch: 30 }];
   const workbook = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(workbook, sheet, 'Jugadores');
   const buffer = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' });
@@ -86,10 +67,7 @@ export async function downloadPlayersTemplate() {
       'Nombre completo': 'Juan Pérez',
       'Posición principal': 'Defensa',
       'Posiciones secundarias': 'Mediocampista',
-      [LEVEL_COLUMN.arquero]: 6,
-      [LEVEL_COLUMN.defensa]: 3,
-      [LEVEL_COLUMN.mediocampista]: 4,
-      [LEVEL_COLUMN.delantero]: 5,
+      Nivel: 3,
       Disponible: 'Sí',
       Observaciones: '',
     },
@@ -129,20 +107,16 @@ export async function parsePlayersExcel(file: File): Promise<ImportResult> {
       return;
     }
 
-    const positionLevels = defaultPositionLevels(3);
-    let levelsOk = true;
-    for (const position of POSITIONS) {
-      const raw = row[LEVEL_COLUMN[position]];
-      if (raw === '' || raw === undefined || raw === null) continue;
-      const level = parseLevel(raw);
-      if (!level) {
-        errors.push(`Fila ${line} (${fullName}): ${LEVEL_COLUMN[position]} inválido (debe ser 1 a 6).`);
-        levelsOk = false;
-        break;
+    let level: SkillLevel = 3;
+    const rawLevel = row['Nivel'];
+    if (rawLevel !== '' && rawLevel !== undefined && rawLevel !== null) {
+      const parsed = parseLevel(rawLevel);
+      if (!parsed) {
+        errors.push(`Fila ${line} (${fullName}): Nivel inválido (debe ser 1 a 6).`);
+        return;
       }
-      positionLevels[position] = level;
+      level = parsed;
     }
-    if (!levelsOk) return;
 
     const secondaryRaw = String(row['Posiciones secundarias'] ?? '');
     const secondaryPositions = secondaryRaw
@@ -154,45 +128,11 @@ export async function parsePlayersExcel(file: File): Promise<ImportResult> {
       fullName,
       primaryPosition,
       secondaryPositions,
-      positionLevels,
+      level,
       available: parseBoolean(row['Disponible']),
       notes: String(row['Observaciones'] ?? '').trim() || undefined,
     });
   });
 
   return { players, errors };
-}
-
-export async function exportSelectionToExcel(result: SelectionResult, filename = 'equipos_perritos_locos.xlsx') {
-  const [XLSX, saveAs] = await Promise.all([loadXlsx(), loadSaveAs()]);
-  const workbook = XLSX.utils.book_new();
-
-  const summary = result.stats.map((s) => {
-    const team = result.teams.find((t) => t.id === s.teamId);
-    return {
-      Equipo: team?.name ?? '',
-      'Puntaje total': s.totalScore,
-      Promedio: Number(s.averageScore.toFixed(2)),
-      Arqueros: s.positionCounts.arquero,
-      Defensas: s.positionCounts.defensa,
-      Mediocampistas: s.positionCounts.mediocampista,
-      Delanteros: s.positionCounts.delantero,
-    };
-  });
-  const summarySheet = XLSX.utils.json_to_sheet(summary);
-  XLSX.utils.book_append_sheet(workbook, summarySheet, 'Resumen');
-
-  result.teams.forEach((team) => {
-    const rows = team.players.map((p) => ({
-      Jugador: p.player.fullName,
-      Posición: POSITION_LABELS[p.assignedPosition],
-      Nivel: p.player.positionLevels[p.assignedPosition],
-      Puntos: p.score,
-    }));
-    const sheet = XLSX.utils.json_to_sheet(rows);
-    XLSX.utils.book_append_sheet(workbook, sheet, team.name.slice(0, 31));
-  });
-
-  const buffer = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' });
-  saveAs(new Blob([buffer], { type: 'application/octet-stream' }), filename);
 }

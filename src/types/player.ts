@@ -6,7 +6,7 @@ export interface Player {
   photoUrl?: string;
   primaryPosition: Position;
   secondaryPositions: Position[];
-  positionLevels: Record<Position, SkillLevel>;
+  level: SkillLevel;
   available: boolean;
   notes?: string;
   createdAt: string;
@@ -14,12 +14,3 @@ export interface Player {
 }
 
 export type PlayerInput = Omit<Player, 'id' | 'createdAt' | 'updatedAt'>;
-
-export function defaultPositionLevels(level: SkillLevel = 3): Record<Position, SkillLevel> {
-  return { arquero: level, defensa: level, mediocampista: level, delantero: level };
-}
-
-/** Nivel "de cabecera" de un jugador: el que tiene en su posición principal. */
-export function overallLevel(player: Pick<Player, 'positionLevels' | 'primaryPosition'>): SkillLevel {
-  return player.positionLevels[player.primaryPosition];
-}

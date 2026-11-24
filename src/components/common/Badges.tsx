@@ -1,11 +1,4 @@
-import { MATCH_STATUS_LABELS, POSITION_LABELS, POSITIONS, SKILL_LABELS, type MatchStatus, type Position, type SkillLevel } from '../../types';
-
-const POSITION_SHORT: Record<Position, string> = {
-  arquero: 'ARQ',
-  defensa: 'DEF',
-  mediocampista: 'MED',
-  delantero: 'DEL',
-};
+import { MATCH_STATUS_LABELS, POSITION_LABELS, SKILL_LABELS, type MatchStatus, type Position, type SkillLevel } from '../../types';
 
 const POSITION_COLORS: Record<Position, string> = {
   arquero: 'bg-surface-container-highest text-on-surface-variant border-white/10',
@@ -62,27 +55,5 @@ export function MatchStatusBadge({ status, className = '' }: { status: MatchStat
     <span className={`inline-flex items-center rounded-full bg-surface-container px-2.5 py-0.5 font-label text-[11px] text-on-surface-variant ${className}`}>
       {MATCH_STATUS_LABELS.scheduled}
     </span>
-  );
-}
-
-export function PositionLevelsBadge({
-  positionLevels,
-  className = '',
-}: {
-  positionLevels: Record<Position, SkillLevel>;
-  className?: string;
-}) {
-  return (
-    <div className={`flex flex-wrap gap-1 ${className}`}>
-      {POSITIONS.map((position) => (
-        <span
-          key={position}
-          title={POSITION_LABELS[position]}
-          className={`inline-flex items-center gap-1 rounded-md border px-1.5 py-0.5 font-label text-[9px] ${SKILL_COLORS[positionLevels[position]]}`}
-        >
-          {POSITION_SHORT[position]} {positionLevels[position]}
-        </span>
-      ))}
-    </div>
   );
 }

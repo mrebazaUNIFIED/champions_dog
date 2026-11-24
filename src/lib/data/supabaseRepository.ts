@@ -1,18 +1,5 @@
 import { supabase } from '../supabase/client';
-import type {
-  Award,
-  ChampionshipConfig,
-  HistoryEntry,
-  Match,
-  MatchEvent,
-  Player,
-  Position,
-  SelectionResult,
-  SkillLevel,
-  TournamentInfo,
-  TournamentTeam,
-  VoteRecord,
-} from '../../types';
+import type { Award, Match, MatchEvent, MatchStage, Player, Position, SkillLevel, TournamentInfo, TournamentTeam } from '../../types';
 import type { DataRepository } from './repository.types';
 
 interface PlayerRow {
@@ -21,7 +8,7 @@ interface PlayerRow {
   photo_url: string | null;
   primary_position: Position;
   secondary_positions: Position[];
-  position_levels: Record<Position, SkillLevel>;
+  level: SkillLevel;
   available: boolean;
   notes: string | null;
   created_at: string;
@@ -35,7 +22,7 @@ function rowToPlayer(row: PlayerRow): Player {
     photoUrl: row.photo_url ?? undefined,
     primaryPosition: row.primary_position,
     secondaryPositions: row.secondary_positions ?? [],
-    positionLevels: row.position_levels,
+    level: row.level,
     available: row.available,
     notes: row.notes ?? undefined,
     createdAt: row.created_at,
@@ -50,7 +37,7 @@ function playerToRow(player: Player): PlayerRow {
     photo_url: player.photoUrl ?? null,
     primary_position: player.primaryPosition,
     secondary_positions: player.secondaryPositions,
-    position_levels: player.positionLevels,
+    level: player.level,
     available: player.available,
     notes: player.notes ?? null,
     created_at: player.createdAt,
@@ -58,8 +45,6 @@ function playerToRow(player: Player): PlayerRow {
   };
 }
 
-const CONFIG_ID = 'singleton';
-const SELECTION_ID = 'singleton';
 const TOURNAMENT_INFO_ID = 'singleton';
 
 interface TeamRow {
@@ -98,6 +83,7 @@ function teamToRow(team: TournamentTeam): TeamRow {
 
 interface MatchRow {
   id: string;
+  stage: MatchStage;
   phase: string;
   home_team_id: string;
   away_team_id: string;
@@ -113,6 +99,7 @@ interface MatchRow {
 function rowToMatch(row: MatchRow): Match {
   return {
     id: row.id,
+    stage: row.stage,
     phase: row.phase,
     homeTeamId: row.home_team_id,
     awayTeamId: row.away_team_id,
@@ -129,6 +116,7 @@ function rowToMatch(row: MatchRow): Match {
 function matchToRow(match: Match): MatchRow {
   return {
     id: match.id,
+    stage: match.stage,
     phase: match.phase,
     home_team_id: match.homeTeamId,
     away_team_id: match.awayTeamId,
@@ -202,93 +190,6 @@ export class SupabaseRepository implements DataRepository {
 
   async deletePlayer(id: string): Promise<void> {
     const { error } = await this.client().from('players').delete().eq('id', id);
-    if (error) throw error;
-  }
-
-  async listVotes(): Promise<VoteRecord[]> {
-    const { data, error } = await this.client().from('player_position_votes').select('*');
-    if (error) throw error;
-    return (data ?? []).map((row) => ({
-      playerId: row.player_id as string,
-      voterId: row.voter_id as VoteRecord['voterId'],
-      position: row.position as Position,
-      level: row.level as SkillLevel,
-      updatedAt: row.updated_at as string,
-    }));
-  }
-
-  async upsertVote(record: VoteRecord): Promise<void> {
-    const { error } = await this.client()
-      .from('player_position_votes')
-      .upsert(
-        {
-          player_id: record.playerId,
-          voter_id: record.voterId,
-          position: record.position,
-          level: record.level,
-          updated_at: record.updatedAt,
-        },
-        { onConflict: 'player_id,voter_id,position' },
-      );
-    if (error) throw error;
-  }
-
-  async applyPositionLevel(playerId: string, position: Position, level: SkillLevel): Promise<void> {
-    const { error } = await this.client().rpc('apply_position_level', {
-      p_player_id: playerId,
-      p_position: position,
-      p_level: level,
-    });
-    if (error) throw error;
-  }
-
-  async getConfig(): Promise<ChampionshipConfig | null> {
-    const { data, error } = await this.client()
-      .from('championship_config')
-      .select('data')
-      .eq('id', CONFIG_ID)
-      .maybeSingle();
-    if (error) throw error;
-    return (data?.data as ChampionshipConfig) ?? null;
-  }
-
-  async saveConfig(config: ChampionshipConfig): Promise<void> {
-    const { error } = await this.client()
-      .from('championship_config')
-      .upsert({ id: CONFIG_ID, data: config, updated_at: new Date().toISOString() });
-    if (error) throw error;
-  }
-
-  async listHistory(): Promise<HistoryEntry[]> {
-    const { data, error } = await this.client()
-      .from('history_entries')
-      .select('data')
-      .order('created_at', { ascending: false });
-    if (error) throw error;
-    return (data ?? []).map((row) => row.data as HistoryEntry);
-  }
-
-  async addHistoryEntry(entry: HistoryEntry): Promise<void> {
-    const { error } = await this.client()
-      .from('history_entries')
-      .insert({ id: entry.id, created_at: entry.createdAt, data: entry });
-    if (error) throw error;
-  }
-
-  async getCurrentSelection(): Promise<SelectionResult | null> {
-    const { data, error } = await this.client()
-      .from('current_selection')
-      .select('data')
-      .eq('id', SELECTION_ID)
-      .maybeSingle();
-    if (error) throw error;
-    return (data?.data as SelectionResult) ?? null;
-  }
-
-  async saveCurrentSelection(result: SelectionResult | null): Promise<void> {
-    const { error } = await this.client()
-      .from('current_selection')
-      .upsert({ id: SELECTION_ID, data: result, updated_at: new Date().toISOString() });
     if (error) throw error;
   }
 

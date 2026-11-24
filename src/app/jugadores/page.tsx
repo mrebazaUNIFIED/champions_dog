@@ -2,40 +2,22 @@
 
 import { useMemo, useRef, useState } from 'react';
 import { Icon } from '../../components/common/Icon';
-import { PositionBadge, SkillBadge } from '../../components/common/Badges';
+import { PositionBadge } from '../../components/common/Badges';
 import { Button } from '../../components/common/Button';
-import { Card, CardTitle } from '../../components/common/Card';
+import { Card } from '../../components/common/Card';
 import { PlayerFormModal } from '../../components/players/PlayerFormModal';
 import { downloadPlayersTemplate, exportPlayersToExcel, parsePlayersExcel } from '../../lib/export/excel';
 import { usePlayersStore } from '../../store/usePlayersStore';
-import { POSITIONS, POSITION_LABELS, SKILL_LABELS, SKILL_LEVELS, type Player, type Position } from '../../types';
+import { POSITIONS, POSITION_LABELS, SKILL_LEVELS, type Player, type Position, type SkillLevel } from '../../types';
 
-const TARGET_GROUP_SIZE = 6;
-
-/**
- * Reparte a todos los jugadores en 6 grupos parejos (lo más cerca posible de 6 cada uno),
- * ordenados de mejor a peor según el promedio de sus 4 niveles por posición. No es un
- * promedio redondeado por jugador (eso da grupos desparejos); es un ranking relativo al
- * resto del plantel, pensado para armar los 6 equipos con un jugador de cada nivel.
- */
-function buildLevelTiers(players: Player[]): Player[][] {
-  const ranked = [...players]
-    .map((p) => ({
-      player: p,
-      score: POSITIONS.reduce((sum, pos) => sum + p.positionLevels[pos], 0) / POSITIONS.length,
-    }))
-    .sort((a, b) => a.score - b.score || a.player.fullName.localeCompare(b.player.fullName));
-
-  const base = Math.floor(ranked.length / TARGET_GROUP_SIZE);
-  const remainder = ranked.length % TARGET_GROUP_SIZE;
-  const tiers: Player[][] = [];
-  let cursor = 0;
-  for (let i = 0; i < TARGET_GROUP_SIZE; i++) {
-    const size = base + (i < remainder ? 1 : 0);
-    tiers.push(ranked.slice(cursor, cursor + size).map((r) => r.player));
-    cursor += size;
+/** Agrupa a los jugadores por su nivel real (asignado a mano). */
+function groupByLevel(players: Player[]): Map<SkillLevel, Player[]> {
+  const groups = new Map<SkillLevel, Player[]>();
+  for (const level of SKILL_LEVELS) groups.set(level, []);
+  for (const p of [...players].sort((a, b) => a.fullName.localeCompare(b.fullName))) {
+    groups.get(p.level)?.push(p);
   }
-  return tiers;
+  return groups;
 }
 
 export default function JugadoresPage() {
@@ -52,7 +34,7 @@ export default function JugadoresPage() {
   const [importFeedback, setImportFeedback] = useState<{ added: number; errors: string[] } | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
 
-  const levelTiers = useMemo(() => buildLevelTiers(players), [players]);
+  const groupedByLevel = useMemo(() => groupByLevel(players), [players]);
 
   function matchesFilters(p: Player) {
     if (search && !p.fullName.toLowerCase().includes(search.toLowerCase())) return false;
@@ -99,50 +81,6 @@ export default function JugadoresPage() {
         </div>
       </div>
 
-      <Card className="overflow-x-auto p-0">
-        <div className="p-5 pb-0">
-          <CardTitle>Resumen general de niveles</CardTitle>
-          <p className="mt-1 text-sm text-on-surface-variant">
-            Los {players.length} jugadores se ordenan de mejor a peor (promedio de sus 4 niveles por posición) y se
-            reparten en 6 grupos parejos, para armar los 6 equipos con un jugador de cada nivel.
-          </p>
-        </div>
-        <table className="w-full text-sm">
-          <thead>
-            <tr className="border-b border-white/10 text-left text-xs uppercase tracking-wide text-on-surface-variant">
-              <th className="px-4 py-3">Nivel</th>
-              <th className="px-4 py-3">Cantidad</th>
-              <th className="px-4 py-3">Jugadores</th>
-            </tr>
-          </thead>
-          <tbody>
-            {SKILL_LEVELS.map((level, idx) => {
-              const group = levelTiers[idx] ?? [];
-              const isSix = group.length === TARGET_GROUP_SIZE;
-              return (
-                <tr key={level} className="border-b border-white/10 last:border-0">
-                  <td className="px-4 py-3">
-                    <SkillBadge level={level} />
-                  </td>
-                  <td className="px-4 py-3">
-                    <span
-                      className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-semibold ${
-                        isSix ? 'bg-green-50 text-green-700' : 'bg-gray-100 text-gray-600'
-                      }`}
-                    >
-                      {isSix && <Icon name="check" />} {group.length}
-                    </span>
-                  </td>
-                  <td className="px-4 py-3 text-on-surface-variant">
-                    {group.length > 0 ? group.map((p) => p.fullName).join(', ') : '—'}
-                  </td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
-      </Card>
-
       {importFeedback && (
         <Card className="border-green-200">
           <p className="text-sm font-medium text-green-700">Se importaron {importFeedback.added} jugadores.</p>
@@ -183,20 +121,17 @@ export default function JugadoresPage() {
         </select>
       </Card>
 
-      <div className="space-y-6">
-        {SKILL_LEVELS.map((level, idx) => {
-          const tierPlayers = (levelTiers[idx] ?? []).filter(matchesFilters);
+      <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-6">
+        {SKILL_LEVELS.map((level) => {
+          const tierPlayers = (groupedByLevel.get(level) ?? []).filter(matchesFilters);
           if (tierPlayers.length === 0) return null;
           return (
-            <div key={level}>
-              <div className="mb-3 flex items-baseline gap-3">
-                <p className="font-display text-4xl leading-none text-on-surface">{level}</p>
-                <div>
-                  <p className="text-sm font-semibold text-on-surface">{SKILL_LABELS[level]}</p>
-                  <p className="text-xs text-on-surface-variant">{tierPlayers.length} jugadores</p>
-                </div>
+            <div key={level} className="flex flex-col gap-3">
+              <div className="flex flex-col">
+                <p className="font-display text-lg font-bold uppercase tracking-wide text-on-surface">Nivel {level}</p>
+                <p className="text-xs text-on-surface-variant">{tierPlayers.length} jugadores</p>
               </div>
-              <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6">
+              <div className="flex flex-col gap-2">
                 {tierPlayers.map((p) => (
                   <div
                     key={p.id}
@@ -223,7 +158,7 @@ export default function JugadoresPage() {
                         <Icon name="delete" className="text-xs" />
                       </button>
                     </div>
-                    <div className="flex h-14 w-14 items-center justify-center overflow-hidden rounded-full border border-white/10 bg-surface-container text-xl text-on-surface-variant">
+                    <div className="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-full border border-white/10 bg-surface-container text-on-surface-variant">
                       {p.photoUrl ? (
                         <img src={p.photoUrl} alt="" className="h-full w-full object-cover" />
                       ) : (
@@ -243,11 +178,11 @@ export default function JugadoresPage() {
             </div>
           );
         })}
-        {players.length > 0 && levelTiers.every((tier) => tier.filter(matchesFilters).length === 0) && (
-          <Card className="py-10 text-center text-sm text-on-surface-variant">No hay jugadores que coincidan con el filtro.</Card>
+        {players.length > 0 && SKILL_LEVELS.every((level) => (groupedByLevel.get(level) ?? []).filter(matchesFilters).length === 0) && (
+          <Card className="col-span-full py-10 text-center text-sm text-on-surface-variant">No hay jugadores que coincidan con el filtro.</Card>
         )}
         {players.length === 0 && (
-          <Card className="py-10 text-center text-sm text-on-surface-variant">Todavía no hay jugadores registrados.</Card>
+          <Card className="col-span-full py-10 text-center text-sm text-on-surface-variant">Todavía no hay jugadores registrados.</Card>
         )}
       </div>
 

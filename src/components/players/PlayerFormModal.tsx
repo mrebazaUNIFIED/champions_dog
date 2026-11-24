@@ -7,7 +7,6 @@ import { Modal } from '../common/Modal';
 import { isSupabaseConfigured } from '../../lib/supabase/client';
 import { uploadPlayerPhoto } from '../../lib/supabase/storage';
 import {
-  defaultPositionLevels,
   POSITIONS,
   POSITION_LABELS,
   SKILL_LABELS,
@@ -29,7 +28,7 @@ const EMPTY: PlayerInput = {
   fullName: '',
   primaryPosition: 'defensa',
   secondaryPositions: [],
-  positionLevels: defaultPositionLevels(3),
+  level: 3,
   available: true,
   notes: '',
   photoUrl: undefined,
@@ -49,7 +48,7 @@ export function PlayerFormModal({ open, onClose, onSubmit, initial }: Props) {
               fullName: initial.fullName,
               primaryPosition: initial.primaryPosition,
               secondaryPositions: initial.secondaryPositions,
-              positionLevels: initial.positionLevels,
+              level: initial.level,
               available: initial.available,
               notes: initial.notes ?? '',
               photoUrl: initial.photoUrl,
@@ -156,31 +155,18 @@ export function PlayerFormModal({ open, onClose, onSubmit, initial }: Props) {
         </div>
 
         <div>
-          <span className="mb-1 block text-sm text-on-surface-variant">Nivel por posición</span>
-          <p className="mb-2 text-xs text-on-surface-variant">Qué tan bien juega en cada puesto, no solo en el suyo (1 Excelente a 6 Principiante).</p>
-          <div className="grid grid-cols-2 gap-3">
-            {POSITIONS.map((p) => (
-              <div key={p}>
-                <label className="mb-1 block text-xs text-on-surface-variant">{POSITION_LABELS[p]}</label>
-                <select
-                  value={form.positionLevels[p]}
-                  onChange={(e) =>
-                    setForm((f) => ({
-                      ...f,
-                      positionLevels: { ...f.positionLevels, [p]: Number(e.target.value) as SkillLevel },
-                    }))
-                  }
-                  className="w-full rounded-lg border border-white/15 bg-surface-container-low px-3 py-2 text-sm text-on-surface outline-none focus:border-primary-container"
-                >
-                  {SKILL_LEVELS.map((lvl) => (
-                    <option key={lvl} value={lvl}>
-                      {lvl} · {SKILL_LABELS[lvl]}
-                    </option>
-                  ))}
-                </select>
-              </div>
+          <label className="mb-1 block text-sm text-on-surface-variant">Nivel</label>
+          <select
+            value={form.level}
+            onChange={(e) => setForm((f) => ({ ...f, level: Number(e.target.value) as SkillLevel }))}
+            className="w-full rounded-lg border border-white/15 bg-surface-container-low px-3 py-2 text-sm text-on-surface outline-none focus:border-primary-container"
+          >
+            {SKILL_LEVELS.map((lvl) => (
+              <option key={lvl} value={lvl}>
+                {lvl} · {SKILL_LABELS[lvl]}
+              </option>
             ))}
-          </div>
+          </select>
         </div>
 
         <div>
