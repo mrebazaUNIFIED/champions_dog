@@ -63,7 +63,7 @@ export function TeamBadge({
         fontSize="34"
         fontWeight={700}
         fill="#ffffff"
-        fontFamily="var(--font-bebas), Inter, system-ui, sans-serif"
+        fontFamily="var(--font-chivo), Inter, system-ui, sans-serif"
       >
         {initialsOf(name)}
       </text>

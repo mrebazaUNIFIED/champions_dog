@@ -126,11 +126,11 @@ body {
   box-shadow: 0 8px 24px -16px rgba(0, 0, 0, 0.6);
 }
 
-/* Panel destacado: mismo tratamiento + borde superior con brillo de reflector. */
+/* Panel destacado: superficie plana + franja superior sólida (sin degradados). */
 .panel-dark {
-  background: linear-gradient(170deg, var(--color-surface-container-high), var(--color-surface-container-lowest));
+  background: var(--color-surface-container-high);
   border: 1px solid rgba(255, 255, 255, 0.08);
-  border-top: 1px solid rgba(0, 245, 155, 0.25);
+  border-top: 4px solid var(--color-primary-container);
   border-radius: var(--radius-xl);
   color: var(--color-on-surface);
 }

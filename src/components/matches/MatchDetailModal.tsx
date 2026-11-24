@@ -4,6 +4,7 @@ import { useMemo } from 'react';
 import { Icon } from '../common/Icon';
 import { Button } from '../common/Button';
 import { Modal } from '../common/Modal';
+import { TeamBadge } from '../common/TeamBadge';
 import { usePlayersStore } from '../../store/usePlayersStore';
 import { useMatchesStore } from '../../store/useMatchesStore';
 import { useTeamsStore } from '../../store/useTeamsStore';
@@ -43,71 +44,57 @@ export function MatchDetailModal({ matchId, onClose }: Props) {
     return players.find((p) => p.id === id)?.fullName ?? '—';
   }
 
-  function toggleLineup(side: 'home' | 'away', playerId: string) {
-    if (!match) return;
-    if (side === 'home') {
-      const next = match.homeLineup.includes(playerId)
-        ? match.homeLineup.filter((id) => id !== playerId)
-        : [...match.homeLineup, playerId];
-      void updateMatch(match.id, { homeLineup: next });
-    } else {
-      const next = match.awayLineup.includes(playerId)
-        ? match.awayLineup.filter((id) => id !== playerId)
-        : [...match.awayLineup, playerId];
-      void updateMatch(match.id, { awayLineup: next });
-    }
-  }
-
   if (!match || !homeTeam || !awayTeam) return null;
 
   const score = matchScore(match);
 
-  function renderRoster(team: TournamentTeam, side: 'home' | 'away') {
-    const lineup = side === 'home' ? match!.homeLineup : match!.awayLineup;
+  function renderRoster(team: TournamentTeam) {
     return (
       <div className="flex-1 space-y-2">
-        <p className="font-display text-lg text-on-surface">{team.name}</p>
-        <div className="space-y-1">
+        <div className="flex items-center gap-2">
+          <TeamBadge name={team.name} color={team.color} size={28} />
+          <p className="font-display text-lg text-on-surface">{team.name}</p>
+        </div>
+        <div className="space-y-1.5">
           {team.playerIds.map((playerId) => {
             const goals = match!.events.filter((e) => e.playerId === playerId && e.type === 'goal').length;
             const yellow = match!.events.filter((e) => e.playerId === playerId && e.type === 'yellow').length;
             const red = match!.events.filter((e) => e.playerId === playerId && e.type === 'red').length;
             return (
-              <div key={playerId} className="flex items-center gap-2 rounded-lg border border-white/10 px-2 py-1.5 text-sm">
-                <input
-                  type="checkbox"
-                  checked={lineup.includes(playerId)}
-                  onChange={() => toggleLineup(side, playerId)}
-                  className="h-4 w-4 shrink-0 accent-primary-container"
-                  title="Titular"
-                />
+              <div
+                key={playerId}
+                className="flex flex-wrap items-center gap-x-2 gap-y-1.5 rounded-lg border border-white/10 bg-surface-container-low px-3 py-2 text-sm"
+              >
                 <span className="min-w-0 flex-1 truncate text-on-surface">{playerName(playerId)}</span>
                 <div className="flex shrink-0 items-center gap-1.5 text-xs text-on-surface-variant">
                   {goals > 0 && <span>⚽ {goals}</span>}
-                  {yellow > 0 && <span className="text-gray-600">🟨 {yellow}</span>}
-                  {red > 0 && <span className="text-red-600">🟥 {red}</span>}
+                  {yellow > 0 && <span>🟨 {yellow}</span>}
+                  {red > 0 && <span>🟥 {red}</span>}
                 </div>
-                <div className="flex shrink-0 gap-1">
+                <div className="flex shrink-0 items-center gap-1.5">
                   <button
                     onClick={() => void addEvent(match!.id, team.id, playerId, 'goal')}
-                    className="rounded px-1.5 py-0.5 text-xs font-semibold text-green-700 hover:bg-green-50"
-                    title="Agregar gol"
+                    className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary-container/15 text-primary-fixed-dim transition hover:bg-primary-container/25"
+                    aria-label="Agregar gol"
+                    title="Gol"
                   >
-                    +G
+                    <Icon name="sports_soccer" />
                   </button>
                   <button
                     onClick={() => void addEvent(match!.id, team.id, playerId, 'yellow')}
-                    className="rounded px-1.5 py-0.5 text-xs font-semibold text-gray-600 hover:bg-gray-100"
-                    title="Agregar amarilla"
+                    className="flex h-8 w-8 items-center justify-center rounded-lg bg-yellow-400/20 transition hover:bg-yellow-400/30"
+                    aria-label="Agregar amarilla"
+                    title="Amarilla"
                   >
-                    +A
+                    <span className="h-4 w-3 rounded-sm bg-yellow-400" />
                   </button>
                   <button
                     onClick={() => void addEvent(match!.id, team.id, playerId, 'red')}
-                    className="rounded px-1.5 py-0.5 text-xs font-semibold text-red-700 hover:bg-red-50"
-                    title="Agregar roja"
+                    className="flex h-8 w-8 items-center justify-center rounded-lg bg-secondary-container/15 transition hover:bg-secondary-container/25"
+                    aria-label="Agregar roja"
+                    title="Roja"
                   >
-                    +R
+                    <span className="h-4 w-3 rounded-sm bg-secondary-container" />
                   </button>
                 </div>
               </div>
@@ -120,15 +107,17 @@ export function MatchDetailModal({ matchId, onClose }: Props) {
   }
 
   return (
-    <Modal open={Boolean(matchId)} onClose={onClose} title="Detalle del partido" width="max-w-3xl">
+    <Modal open={Boolean(matchId)} onClose={onClose} title="Detalle del partido" width="max-w-4xl">
       <div className="space-y-5">
-        <div className="flex items-center justify-center gap-2">
+        <div className="flex flex-wrap items-center justify-center gap-2">
           {STATUS_OPTIONS.map((status) => (
             <button
               key={status}
               onClick={() => void updateMatch(match.id, { status })}
-              className={`rounded-full px-3 py-1 text-xs font-semibold transition ${
-                match.status === status ? 'bg-ink-900 text-white' : 'bg-surface-container text-on-surface-variant hover:bg-surface-container-high'
+              className={`rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-wide transition ${
+                match.status === status
+                  ? 'bg-primary-container text-on-primary-container'
+                  : 'bg-surface-container text-on-surface-variant hover:bg-surface-container-high'
               }`}
             >
               {MATCH_STATUS_LABELS[status]}
@@ -136,17 +125,23 @@ export function MatchDetailModal({ matchId, onClose }: Props) {
           ))}
         </div>
 
-        <div className="flex items-center justify-center gap-6">
-          <p className="flex-1 text-right font-display text-xl text-on-surface">{homeTeam.name}</p>
-          <p className="font-display text-4xl text-on-surface">
+        <div className="flex items-center justify-center gap-4 sm:gap-6">
+          <div className="flex flex-1 items-center justify-end gap-2">
+            <p className="truncate text-right font-display text-lg text-on-surface sm:text-xl">{homeTeam.name}</p>
+            <TeamBadge name={homeTeam.name} color={homeTeam.color} size={36} className="shrink-0" />
+          </div>
+          <p className="shrink-0 font-display text-4xl text-on-surface">
             {score.home} — {score.away}
           </p>
-          <p className="flex-1 font-display text-xl text-on-surface">{awayTeam.name}</p>
+          <div className="flex flex-1 items-center gap-2">
+            <TeamBadge name={awayTeam.name} color={awayTeam.color} size={36} className="shrink-0" />
+            <p className="truncate font-display text-lg text-on-surface sm:text-xl">{awayTeam.name}</p>
+          </div>
         </div>
 
         <div className="flex flex-col gap-4 sm:flex-row">
-          {renderRoster(homeTeam, 'home')}
-          {renderRoster(awayTeam, 'away')}
+          {renderRoster(homeTeam)}
+          {renderRoster(awayTeam)}
         </div>
 
         <div>

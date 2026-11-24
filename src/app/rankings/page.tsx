@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { Icon } from '../../components/common/Icon';
 import { Button } from '../../components/common/Button';
 import { Card, CardTitle } from '../../components/common/Card';
+import { TeamBadge } from '../../components/common/TeamBadge';
 import { useAwardsStore } from '../../store/useAwardsStore';
 import { useMatchesStore } from '../../store/useMatchesStore';
 import { usePlayersStore } from '../../store/usePlayersStore';
@@ -48,8 +49,11 @@ export default function RankingsPage() {
   function playerName(id: string) {
     return players.find((p) => p.id === id)?.fullName ?? '—';
   }
+  function team(id: string) {
+    return teams.find((t) => t.id === id);
+  }
   function teamName(id: string) {
-    return teams.find((t) => t.id === id)?.name ?? '—';
+    return team(id)?.name ?? '—';
   }
 
   const [title, setTitle] = useState('');
@@ -79,16 +83,24 @@ export default function RankingsPage() {
           </div>
           <div className="mt-3 divide-y divide-white/10">
             {scorers.length === 0 && <p className="px-5 py-6 text-sm text-on-surface-variant">Todavía no hay goles cargados.</p>}
-            {scorers.map((s, i) => (
-              <div key={s.playerId} className="flex items-center gap-3 px-5 py-3">
-                <span className="w-5 text-sm font-semibold text-on-surface-variant">{i + 1}</span>
-                <div className="min-w-0 flex-1">
-                  <p className="truncate text-sm font-medium text-on-surface">{playerName(s.playerId)}</p>
-                  <p className="text-xs text-on-surface-variant">{teamName(s.teamId)}</p>
+            {scorers.map((s, i) => {
+              const t = team(s.teamId);
+              return (
+                <div key={s.playerId} className="flex items-center gap-3 px-5 py-3">
+                  <span className="w-5 text-sm font-semibold text-on-surface-variant">{i + 1}</span>
+                  {t?.logoUrl ? (
+                    <img src={t.logoUrl} alt="" className="h-8 w-8 shrink-0 rounded-full object-cover" />
+                  ) : t ? (
+                    <TeamBadge name={t.name} color={t.color} size={32} />
+                  ) : null}
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate text-sm font-medium text-on-surface">{playerName(s.playerId)}</p>
+                    <p className="text-xs text-on-surface-variant">{teamName(s.teamId)}</p>
+                  </div>
+                  <p className="font-display text-xl text-on-surface">{s.count}</p>
                 </div>
-                <p className="font-display text-xl text-on-surface">{s.count}</p>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </Card>
 
@@ -98,20 +110,28 @@ export default function RankingsPage() {
           </div>
           <div className="mt-3 divide-y divide-white/10">
             {cards.length === 0 && <p className="px-5 py-6 text-sm text-on-surface-variant">Todavía no hay tarjetas cargadas.</p>}
-            {cards.map((c) => (
-              <div key={c.playerId} className="flex items-center gap-3 px-5 py-3">
-                <div className="min-w-0 flex-1">
-                  <p className="truncate text-sm font-medium text-on-surface">{playerName(c.playerId)}</p>
-                  <p className="text-xs text-on-surface-variant">{teamName(c.teamId)}</p>
+            {cards.map((c) => {
+              const t = team(c.teamId);
+              return (
+                <div key={c.playerId} className="flex items-center gap-3 px-5 py-3">
+                  {t?.logoUrl ? (
+                    <img src={t.logoUrl} alt="" className="h-8 w-8 shrink-0 rounded-full object-cover" />
+                  ) : t ? (
+                    <TeamBadge name={t.name} color={t.color} size={32} />
+                  ) : null}
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate text-sm font-medium text-on-surface">{playerName(c.playerId)}</p>
+                    <p className="text-xs text-on-surface-variant">{teamName(c.teamId)}</p>
+                  </div>
+                  <div className="flex shrink-0 gap-2 text-sm">
+                    {c.yellow > 0 && (
+                      <span className="rounded bg-gray-100 px-2 py-0.5 font-semibold text-gray-700">🟨 {c.yellow}</span>
+                    )}
+                    {c.red > 0 && <span className="rounded bg-red-50 px-2 py-0.5 font-semibold text-red-700">🟥 {c.red}</span>}
+                  </div>
                 </div>
-                <div className="flex shrink-0 gap-2 text-sm">
-                  {c.yellow > 0 && (
-                    <span className="rounded bg-gray-100 px-2 py-0.5 font-semibold text-gray-700">🟨 {c.yellow}</span>
-                  )}
-                  {c.red > 0 && <span className="rounded bg-red-50 px-2 py-0.5 font-semibold text-red-700">🟥 {c.red}</span>}
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </Card>
       </div>
