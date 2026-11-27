@@ -71,7 +71,7 @@ export function AddMatchModal({ open, onClose, onSubmit, teams, nextFechaNumber 
               className={`rounded-lg border px-3 py-2 text-sm font-medium transition ${
                 stage === 'fecha'
                   ? 'border-primary-container bg-primary-container/15 text-primary-fixed-dim'
-                  : 'border-white/15 text-on-surface-variant hover:bg-surface-container-low'
+                  : 'border-outline-variant text-on-surface-variant hover:bg-surface-container-low'
               }`}
             >
               Fecha de liga
@@ -82,7 +82,7 @@ export function AddMatchModal({ open, onClose, onSubmit, teams, nextFechaNumber 
               className={`rounded-lg border px-3 py-2 text-sm font-medium transition ${
                 stage === 'eliminatoria'
                   ? 'border-secondary-container bg-secondary-container/15 text-secondary-fixed'
-                  : 'border-white/15 text-on-surface-variant hover:bg-surface-container-low'
+                  : 'border-outline-variant text-on-surface-variant hover:bg-surface-container-low'
               }`}
             >
               Eliminatoria
@@ -98,7 +98,7 @@ export function AddMatchModal({ open, onClose, onSubmit, teams, nextFechaNumber 
               min={1}
               value={fechaNumber}
               onChange={(e) => setFechaNumber(Math.max(1, Number(e.target.value) || 1))}
-              className="w-full rounded-lg border border-white/15 bg-surface-container-low px-3 py-2 text-on-surface outline-none focus:border-primary-container"
+              className="w-full rounded-lg border border-outline-variant bg-surface-container-low px-3 py-2 text-on-surface outline-none focus:border-primary-container"
             />
             <p className="mt-1 text-xs text-on-surface-variant">Suma a la tabla de posiciones.</p>
           </div>
@@ -108,7 +108,7 @@ export function AddMatchModal({ open, onClose, onSubmit, teams, nextFechaNumber 
             <select
               value={round}
               onChange={(e) => setRound(e.target.value)}
-              className="w-full rounded-lg border border-white/15 bg-surface-container-low px-3 py-2 text-on-surface outline-none focus:border-primary-container"
+              className="w-full rounded-lg border border-outline-variant bg-surface-container-low px-3 py-2 text-on-surface outline-none focus:border-primary-container"
             >
               {KNOCKOUT_ROUND_PRESETS.map((r) => (
                 <option key={r} value={r}>
@@ -126,7 +126,7 @@ export function AddMatchModal({ open, onClose, onSubmit, teams, nextFechaNumber 
             <select
               value={homeTeamId}
               onChange={(e) => setHomeTeamId(e.target.value)}
-              className="w-full rounded-lg border border-white/15 bg-surface-container-low px-3 py-2 text-on-surface outline-none focus:border-primary-container"
+              className="w-full rounded-lg border border-outline-variant bg-surface-container-low px-3 py-2 text-on-surface outline-none focus:border-primary-container"
             >
               {teams.map((t) => (
                 <option key={t.id} value={t.id}>
@@ -140,7 +140,7 @@ export function AddMatchModal({ open, onClose, onSubmit, teams, nextFechaNumber 
             <select
               value={awayTeamId}
               onChange={(e) => setAwayTeamId(e.target.value)}
-              className="w-full rounded-lg border border-white/15 bg-surface-container-low px-3 py-2 text-on-surface outline-none focus:border-primary-container"
+              className="w-full rounded-lg border border-outline-variant bg-surface-container-low px-3 py-2 text-on-surface outline-none focus:border-primary-container"
             >
               {teams.map((t) => (
                 <option key={t.id} value={t.id}>
@@ -157,11 +157,11 @@ export function AddMatchModal({ open, onClose, onSubmit, teams, nextFechaNumber 
             type="datetime-local"
             value={scheduledAt}
             onChange={(e) => setScheduledAt(e.target.value)}
-            className="w-full rounded-lg border border-white/15 bg-surface-container-low px-3 py-2 text-on-surface outline-none focus:border-primary-container"
+            className="w-full rounded-lg border border-outline-variant bg-surface-container-low px-3 py-2 text-on-surface outline-none focus:border-primary-container"
           />
         </div>
 
-        {error && <p className="text-sm text-red-600">{error}</p>}
+        {error && <p className="text-sm text-secondary-container">{error}</p>}
 
         <div className="flex justify-end gap-2 pt-2">
           <Button type="button" variant="ghost" onClick={onClose}>

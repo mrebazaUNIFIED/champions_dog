@@ -60,45 +60,41 @@ export default function EquiposPage() {
           Todavía no cargaste ningún equipo.
         </Card>
       ) : (
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
           {teams.map((team) => (
-            <Card key={team.id} className="flex flex-col gap-3">
-              <div className="flex items-center gap-3">
-                {team.logoUrl ? (
-                  <img src={team.logoUrl} alt="" className="h-12 w-12 shrink-0 rounded-full border border-white/10 object-cover" />
-                ) : (
-                  <TeamBadge name={team.name} color={team.color} size={48} />
-                )}
-                <div className="min-w-0 flex-1">
-                  <p className="truncate font-display text-lg leading-tight text-on-surface">{team.name}</p>
-                  <p className="flex items-center gap-1 text-xs text-on-surface-variant">
-                    <Icon name="group" /> {team.playerIds.length} jugadores
-                  </p>
-                </div>
-                <div className="flex shrink-0 gap-1">
-                  <button
-                    onClick={() => {
-                      setEditing(team);
-                      setModalOpen(true);
-                    }}
-                    className="rounded-lg p-2 text-on-surface-variant hover:bg-surface-container hover:text-on-surface"
-                    aria-label="Editar"
-                  >
-                    <Icon name="edit" />
-                  </button>
-                  <button
-                    onClick={() => {
-                      if (confirm(`¿Eliminar a ${team.name}?`)) void deleteTeam(team.id);
-                    }}
-                    className="rounded-lg p-2 text-red-400 hover:bg-red-50 hover:text-red-600"
-                    aria-label="Eliminar"
-                  >
-                    <Icon name="delete" />
-                  </button>
-                </div>
+            <Card key={team.id} className="group relative flex flex-col items-center gap-2 text-center">
+              <div className="absolute right-2 top-2 flex gap-0.5 opacity-0 transition group-hover:opacity-100">
+                <button
+                  onClick={() => {
+                    setEditing(team);
+                    setModalOpen(true);
+                  }}
+                  className="rounded-lg p-1.5 text-on-surface-variant hover:bg-surface-container hover:text-on-surface"
+                  aria-label="Editar"
+                >
+                  <Icon name="edit" className="text-sm" />
+                </button>
+                <button
+                  onClick={() => {
+                    if (confirm(`¿Eliminar a ${team.name}?`)) void deleteTeam(team.id);
+                  }}
+                  className="rounded-lg p-1.5 text-secondary-container hover:bg-secondary-container/10"
+                  aria-label="Eliminar"
+                >
+                  <Icon name="delete" className="text-sm" />
+                </button>
               </div>
+              {team.logoUrl ? (
+                <img src={team.logoUrl} alt="" className="h-16 w-16 shrink-0 rounded-full border border-outline-variant object-cover" />
+              ) : (
+                <TeamBadge name={team.name} color={team.color} size={64} circle />
+              )}
+              <p className="w-full truncate font-display text-base leading-tight text-on-surface">{team.name}</p>
+              <p className="flex items-center gap-1 text-xs text-on-surface-variant">
+                <Icon name="group" /> {team.playerIds.length} jugadores
+              </p>
               {team.playerIds.length > 0 && (
-                <p className="text-xs text-on-surface-variant">{team.playerIds.map(playerName).join(', ')}</p>
+                <p className="line-clamp-2 text-xs text-on-surface-variant">{team.playerIds.map(playerName).join(', ')}</p>
               )}
             </Card>
           ))}

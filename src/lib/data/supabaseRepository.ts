@@ -1,5 +1,15 @@
 import { supabase } from '../supabase/client';
-import type { Award, Match, MatchEvent, MatchStage, Player, Position, SkillLevel, TournamentInfo, TournamentTeam } from '../../types';
+import type {
+  Match,
+  MatchClockStatus,
+  MatchEvent,
+  MatchStage,
+  Player,
+  Position,
+  SkillLevel,
+  TournamentInfo,
+  TournamentTeam,
+} from '../../types';
 import type { DataRepository } from './repository.types';
 
 interface PlayerRow {
@@ -92,11 +102,18 @@ interface MatchRow {
   home_lineup: string[];
   away_lineup: string[];
   events: MatchEvent[];
+  clock_status: MatchClockStatus | null;
+  clock_started_at: string | null;
+  clock_elapsed_ms: number | null;
   created_at: string;
   updated_at: string;
 }
 
-function rowToMatch(row: MatchRow): Match {
+/** Exportado para que el overlay de OBS (src/app/overlay) pueda mapear las filas que le
+ * llegan por la suscripción de Supabase Realtime sin duplicar esta lógica. Los campos de
+ * cronómetro usan `??` porque pueden no existir todavía si no se corrió la migración
+ * 0010_match_clock. */
+export function rowToMatch(row: MatchRow): Match {
   return {
     id: row.id,
     stage: row.stage,
@@ -108,6 +125,9 @@ function rowToMatch(row: MatchRow): Match {
     homeLineup: row.home_lineup ?? [],
     awayLineup: row.away_lineup ?? [],
     events: row.events ?? [],
+    clockStatus: row.clock_status ?? 'idle',
+    clockStartedAt: row.clock_started_at ?? undefined,
+    clockElapsedMs: row.clock_elapsed_ms ?? 0,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
   };
@@ -125,39 +145,11 @@ function matchToRow(match: Match): MatchRow {
     home_lineup: match.homeLineup,
     away_lineup: match.awayLineup,
     events: match.events,
+    clock_status: match.clockStatus,
+    clock_started_at: match.clockStartedAt ?? null,
+    clock_elapsed_ms: match.clockElapsedMs,
     created_at: match.createdAt,
     updated_at: match.updatedAt,
-  };
-}
-
-interface AwardRow {
-  id: string;
-  title: string;
-  winner_player_id: string | null;
-  winner_name: string | null;
-  note: string | null;
-  created_at: string;
-}
-
-function rowToAward(row: AwardRow): Award {
-  return {
-    id: row.id,
-    title: row.title,
-    winnerPlayerId: row.winner_player_id ?? undefined,
-    winnerName: row.winner_name ?? undefined,
-    note: row.note ?? undefined,
-    createdAt: row.created_at,
-  };
-}
-
-function awardToRow(award: Award): AwardRow {
-  return {
-    id: award.id,
-    title: award.title,
-    winner_player_id: award.winnerPlayerId ?? null,
-    winner_name: award.winnerName ?? null,
-    note: award.note ?? null,
-    created_at: award.createdAt,
   };
 }
 
@@ -215,6 +207,12 @@ export class SupabaseRepository implements DataRepository {
     return (data as MatchRow[]).map(rowToMatch);
   }
 
+  async getMatch(id: string): Promise<Match | null> {
+    const { data, error } = await this.client().from('matches').select('*').eq('id', id).maybeSingle();
+    if (error) throw error;
+    return data ? rowToMatch(data as MatchRow) : null;
+  }
+
   async upsertMatch(match: Match): Promise<void> {
     const { error } = await this.client().from('matches').upsert(matchToRow(match));
     if (error) throw error;
@@ -222,22 +220,6 @@ export class SupabaseRepository implements DataRepository {
 
   async deleteMatch(id: string): Promise<void> {
     const { error } = await this.client().from('matches').delete().eq('id', id);
-    if (error) throw error;
-  }
-
-  async listAwards(): Promise<Award[]> {
-    const { data, error } = await this.client().from('awards').select('*').order('created_at');
-    if (error) throw error;
-    return (data as AwardRow[]).map(rowToAward);
-  }
-
-  async upsertAward(award: Award): Promise<void> {
-    const { error } = await this.client().from('awards').upsert(awardToRow(award));
-    if (error) throw error;
-  }
-
-  async deleteAward(id: string): Promise<void> {
-    const { error } = await this.client().from('awards').delete().eq('id', id);
     if (error) throw error;
   }
 

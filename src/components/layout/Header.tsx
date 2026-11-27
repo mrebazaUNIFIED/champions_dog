@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { useRouter, usePathname } from 'next/navigation';
 import { useMemo, useRef, useState } from 'react';
 import { Icon } from '../common/Icon';
+import { useTheme } from '../../hooks/useTheme';
 import { usePlayersStore } from '../../store/usePlayersStore';
 import { useTeamsStore } from '../../store/useTeamsStore';
 import { NAV_ITEMS } from './navItems';
@@ -20,6 +21,7 @@ export default function Header() {
 
   const players = usePlayersStore((s) => s.players);
   const teams = useTeamsStore((s) => s.teams);
+  const { theme, toggleTheme } = useTheme();
 
   const results = useMemo(() => {
     const term = search.trim().toLowerCase();
@@ -40,11 +42,11 @@ export default function Header() {
   const hasResults = results.players.length > 0 || results.teams.length > 0;
 
   return (
-    <header className="fixed top-0 z-50 w-full border-b border-white/8 bg-surface/85 backdrop-blur-xl">
+    <header className="fixed top-0 z-50 w-full border-b border-outline-variant bg-surface/85 backdrop-blur-xl">
       <div className="flex h-20 w-full items-center justify-between gap-gutter px-margin md:px-margin-tablet">
         <div className="flex min-w-0 items-center gap-space-lg">
           <Link href="/" className="group flex shrink-0 items-center gap-space-sm">
-            <div className="h-9 w-9 overflow-hidden rounded-full ring-1 ring-white/15 transition-transform group-hover:scale-105">
+            <div className="h-9 w-9 overflow-hidden rounded-full ring-1 ring-outline-variant transition-transform group-hover:scale-105">
               <Image src="/logo.jpg" alt="Perros Locos" width={36} height={36} className="h-full w-full object-cover" />
             </div>
             <div className="hidden flex-col sm:flex">
@@ -63,8 +65,8 @@ export default function Header() {
                   className={clsx(
                     'rounded-lg px-space-md py-space-sm text-sm font-medium transition-colors',
                     active
-                      ? 'bg-surface-container-high font-bold text-primary-container shadow-inner'
-                      : 'text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface',
+                      ? 'bg-on-primary-container font-bold text-white'
+                      : 'text-on-surface-variant hover:bg-on-primary-container hover:text-white',
                   )}
                 >
                   {item.label}
@@ -89,7 +91,7 @@ export default function Header() {
               className="w-56 rounded bg-surface-container-low py-space-xs pl-9 pr-space-sm text-sm text-on-surface placeholder:text-on-surface-variant outline-none focus:bg-surface-container-high lg:w-64"
             />
             {searchOpen && search && (
-              <div className="absolute right-0 top-full mt-2 w-72 overflow-hidden rounded-xl border border-white/10 bg-surface-container-high shadow-xl">
+              <div className="absolute right-0 top-full mt-2 w-72 overflow-hidden rounded-xl border border-outline-variant bg-surface-container-high shadow-xl">
                 {!hasResults && <p className="px-4 py-3 text-sm text-on-surface-variant">Sin resultados.</p>}
                 {results.players.length > 0 && (
                   <div className="py-1">
@@ -107,7 +109,7 @@ export default function Header() {
                   </div>
                 )}
                 {results.teams.length > 0 && (
-                  <div className="border-t border-white/10 py-1">
+                  <div className="border-t border-outline-variant py-1">
                     <p className="px-4 pb-1 pt-2 font-label text-[10px] text-on-surface-variant">Equipos</p>
                     {results.teams.map((t) => (
                       <button
@@ -127,6 +129,16 @@ export default function Header() {
 
           <button
             type="button"
+            onClick={toggleTheme}
+            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface"
+            aria-label={theme === 'dark' ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro'}
+            title={theme === 'dark' ? 'Modo claro' : 'Modo oscuro'}
+          >
+            <Icon name={theme === 'dark' ? 'light_mode' : 'dark_mode'} />
+          </button>
+
+          <button
+            type="button"
             onClick={() => setMenuOpen((v) => !v)}
             className="flex h-10 w-10 items-center justify-center rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface xl:hidden"
             aria-label="Abrir menú"
@@ -137,7 +149,7 @@ export default function Header() {
       </div>
 
       {menuOpen && (
-        <nav className="flex flex-col gap-1 border-t border-white/8 bg-surface-container-lowest px-margin py-space-md xl:hidden">
+        <nav className="flex flex-col gap-1 border-t border-outline-variant bg-surface-container-lowest px-margin py-space-md xl:hidden">
           {NAV_ITEMS.map((item) => {
             const active = pathname === item.href;
             return (
@@ -147,7 +159,7 @@ export default function Header() {
                 onClick={() => setMenuOpen(false)}
                 className={clsx(
                   'flex items-center gap-space-sm rounded-lg px-space-md py-space-sm text-sm font-medium',
-                  active ? 'bg-surface-container-high text-primary-container' : 'text-on-surface-variant hover:bg-surface-container-high',
+                  active ? 'bg-on-primary-container text-white' : 'text-on-surface-variant hover:bg-on-primary-container hover:text-white',
                 )}
               >
                 <Icon name={item.icon} className="text-lg" />

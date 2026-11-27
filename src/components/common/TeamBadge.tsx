@@ -9,18 +9,21 @@ function initialsOf(name: string): string {
   return (words[0][0] + words[1][0]).toUpperCase();
 }
 
-/** Escudo vectorial (SVG) con degradé en el color del equipo e iniciales — liviano y nítido a cualquier tamaño. */
+/** Insignia vectorial (SVG) con degradé en el color del equipo e iniciales — liviano y nítido a cualquier
+ * tamaño. `circle` la dibuja redonda (para listas de escudos) en vez del escudo tradicional. */
 export function TeamBadge({
   name,
   color,
   size = 44,
   glow = false,
+  circle = false,
   className = '',
 }: {
   name: string;
   color: string;
   size?: number;
   glow?: boolean;
+  circle?: boolean;
   className?: string;
 }) {
   const gradientId = `badge-${useId()}`;
@@ -42,20 +45,26 @@ export function TeamBadge({
           <stop offset="100%" stopColor={color} stopOpacity="0.85" />
         </linearGradient>
       </defs>
-      <path
-        d="M50 3 L91 17 L91 50 C91 76 73 92 50 97 C27 92 9 76 9 50 L9 17 Z"
-        fill={`url(#${gradientId})`}
-        stroke="#ffffff"
-        strokeOpacity={0.5}
-        strokeWidth={2.5}
-      />
-      <path
-        d="M50 3 L91 17 L91 50 C91 76 73 92 50 97"
-        fill="none"
-        stroke="#ffffff"
-        strokeOpacity={0.9}
-        strokeWidth={1.5}
-      />
+      {circle ? (
+        <circle cx="50" cy="50" r="47" fill={`url(#${gradientId})`} stroke="#ffffff" strokeOpacity={0.5} strokeWidth={2.5} />
+      ) : (
+        <>
+          <path
+            d="M50 3 L91 17 L91 50 C91 76 73 92 50 97 C27 92 9 76 9 50 L9 17 Z"
+            fill={`url(#${gradientId})`}
+            stroke="#ffffff"
+            strokeOpacity={0.5}
+            strokeWidth={2.5}
+          />
+          <path
+            d="M50 3 L91 17 L91 50 C91 76 73 92 50 97"
+            fill="none"
+            stroke="#ffffff"
+            strokeOpacity={0.9}
+            strokeWidth={1.5}
+          />
+        </>
+      )}
       <text
         x="50"
         y="58"
@@ -63,7 +72,7 @@ export function TeamBadge({
         fontSize="34"
         fontWeight={700}
         fill="#ffffff"
-        fontFamily="var(--font-chivo), Inter, system-ui, sans-serif"
+        fontFamily="var(--font-display)"
       >
         {initialsOf(name)}
       </text>

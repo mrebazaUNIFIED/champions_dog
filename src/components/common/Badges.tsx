@@ -1,9 +1,9 @@
 import { MATCH_STATUS_LABELS, POSITION_LABELS, SKILL_LABELS, type MatchStatus, type Position, type SkillLevel } from '../../types';
 
 const POSITION_COLORS: Record<Position, string> = {
-  arquero: 'bg-surface-container-highest text-on-surface-variant border-white/10',
+  arquero: 'bg-surface-container-highest text-on-surface-variant border-outline-variant',
   defensa: 'bg-primary-container/15 text-primary-fixed-dim border-primary-container/25',
-  mediocampista: 'bg-surface-container text-on-surface-variant border-white/10',
+  mediocampista: 'bg-surface-container text-on-surface-variant border-outline-variant',
   delantero: 'bg-secondary-container/15 text-secondary-fixed border-secondary-container/25',
 };
 
@@ -18,8 +18,8 @@ export function PositionBadge({ position, className = '' }: { position: Position
 const SKILL_COLORS: Record<SkillLevel, string> = {
   1: 'bg-primary-container/25 text-primary-fixed-dim border-primary-container/35',
   2: 'bg-primary-container/10 text-primary-fixed-dim border-primary-container/20',
-  3: 'bg-surface-container-highest text-on-surface-variant border-white/10',
-  4: 'bg-surface-container text-on-surface-variant border-white/10',
+  3: 'bg-surface-container-highest text-on-surface-variant border-outline-variant',
+  4: 'bg-surface-container text-on-surface-variant border-outline-variant',
   5: 'bg-secondary-container/10 text-secondary-fixed border-secondary-container/20',
   6: 'bg-secondary-container/25 text-secondary-fixed border-secondary-container/35',
 };

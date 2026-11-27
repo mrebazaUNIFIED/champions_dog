@@ -1,11 +1,10 @@
-import type { Award, Match, Player, TournamentInfo, TournamentTeam } from '../../types';
+import type { Match, Player, TournamentInfo, TournamentTeam } from '../../types';
 import type { DataRepository } from './repository.types';
 
 const KEYS = {
   players: 'pdl.players',
   teams: 'pdl.teams',
   matches: 'pdl.matches',
-  awards: 'pdl.awards',
   tournamentInfo: 'pdl.tournamentInfo',
 };
 
@@ -77,6 +76,11 @@ export class LocalRepository implements DataRepository {
     return read<Match[]>(KEYS.matches, []);
   }
 
+  async getMatch(id: string): Promise<Match | null> {
+    const matches = await this.listMatches();
+    return matches.find((m) => m.id === id) ?? null;
+  }
+
   async upsertMatch(match: Match): Promise<void> {
     const matches = await this.listMatches();
     const idx = matches.findIndex((m) => m.id === match.id);
@@ -88,23 +92,6 @@ export class LocalRepository implements DataRepository {
   async deleteMatch(id: string): Promise<void> {
     const matches = await this.listMatches();
     write(KEYS.matches, matches.filter((m) => m.id !== id));
-  }
-
-  async listAwards(): Promise<Award[]> {
-    return read<Award[]>(KEYS.awards, []);
-  }
-
-  async upsertAward(award: Award): Promise<void> {
-    const awards = await this.listAwards();
-    const idx = awards.findIndex((a) => a.id === award.id);
-    if (idx >= 0) awards[idx] = award;
-    else awards.push(award);
-    write(KEYS.awards, awards);
-  }
-
-  async deleteAward(id: string): Promise<void> {
-    const awards = await this.listAwards();
-    write(KEYS.awards, awards.filter((a) => a.id !== id));
   }
 
   async getTournamentInfo(): Promise<TournamentInfo | null> {

@@ -27,6 +27,8 @@ function makeMatch(overrides: Partial<Match> & Pick<Match, 'homeTeamId' | 'awayT
     homeLineup: [],
     awayLineup: [],
     events: [],
+    clockStatus: 'idle',
+    clockElapsedMs: 0,
     createdAt: now,
     updatedAt: now,
     ...overrides,

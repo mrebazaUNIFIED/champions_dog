@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { Icon } from '../common/Icon';
 import { Button } from '../common/Button';
 import { Modal } from '../common/Modal';
+import { DogLoader } from '../common/DogLoader';
 import { isSupabaseConfigured } from '../../lib/supabase/client';
 import { uploadTeamLogo } from '../../lib/supabase/storage';
 import { DEFAULT_TEAM_COLORS, type Player, type TournamentTeam } from '../../types';
@@ -89,9 +90,9 @@ export function TeamFormModal({ open, onClose, onSubmit, initial, players }: Pro
     <Modal open={open} onClose={onClose} title={initial ? 'Editar equipo' : 'Nuevo equipo'} width="max-w-2xl">
       <form onSubmit={handleSubmit} className="space-y-4">
         <div className="flex items-center gap-4">
-          <div className="flex h-16 w-16 items-center justify-center overflow-hidden rounded-full border border-white/15 bg-surface-container text-2xl text-on-surface-variant">
+          <div className="flex h-16 w-16 items-center justify-center overflow-hidden rounded-full border border-outline-variant bg-surface-container text-2xl text-on-surface-variant">
             {uploadingLogo ? (
-              <Icon name="progress_activity" className="animate-spin text-xl text-primary-fixed-dim" />
+              <DogLoader size={28} />
             ) : form.logoUrl ? (
               <img src={form.logoUrl} alt="" className="h-full w-full object-cover" />
             ) : (
@@ -107,7 +108,7 @@ export function TeamFormModal({ open, onClose, onSubmit, initial, players }: Pro
               disabled={uploadingLogo}
               className="text-xs text-on-surface-variant"
             />
-            {logoError && <p className="mt-1 text-xs text-red-600">{logoError}</p>}
+            {logoError && <p className="mt-1 text-xs text-secondary-container">{logoError}</p>}
           </label>
         </div>
 
@@ -118,7 +119,7 @@ export function TeamFormModal({ open, onClose, onSubmit, initial, players }: Pro
               required
               value={form.name}
               onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
-              className="w-full rounded-lg border border-white/15 bg-surface-container-low px-3 py-2 text-on-surface outline-none focus:border-primary-container"
+              className="w-full rounded-lg border border-outline-variant bg-surface-container-low px-3 py-2 text-on-surface outline-none focus:border-primary-container"
             />
           </div>
           <div>
@@ -127,7 +128,7 @@ export function TeamFormModal({ open, onClose, onSubmit, initial, players }: Pro
               type="color"
               value={form.color}
               onChange={(e) => setForm((f) => ({ ...f, color: e.target.value }))}
-              className="h-[42px] w-14 cursor-pointer rounded-lg border border-white/15 bg-transparent"
+              className="h-[42px] w-14 cursor-pointer rounded-lg border border-outline-variant bg-transparent"
             />
           </div>
         </div>
@@ -143,14 +144,14 @@ export function TeamFormModal({ open, onClose, onSubmit, initial, players }: Pro
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Buscar jugador…"
-              className="w-full rounded-lg border border-white/15 bg-surface-container-low py-2 pl-9 pr-3 text-sm text-on-surface outline-none focus:border-primary-container"
+              className="w-full rounded-lg border border-outline-variant bg-surface-container-low py-2 pl-9 pr-3 text-sm text-on-surface outline-none focus:border-primary-container"
             />
           </div>
-          <div className="max-h-56 overflow-y-auto rounded-lg border border-white/10">
+          <div className="max-h-56 overflow-y-auto rounded-lg border border-outline-variant">
             {filteredPlayers.map((p) => (
               <label
                 key={p.id}
-                className="flex cursor-pointer items-center gap-2 border-b border-white/10 px-3 py-2 text-sm last:border-0 hover:bg-background"
+                className="flex cursor-pointer items-center gap-2 border-b border-outline-variant px-3 py-2 text-sm last:border-0 hover:bg-background"
               >
                 <input
                   type="checkbox"

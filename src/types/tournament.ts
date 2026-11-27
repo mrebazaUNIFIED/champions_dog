@@ -46,6 +46,9 @@ export interface MatchEvent {
   createdAt: string;
 }
 
+/** Estado del cronómetro del partido, para el overlay de transmisión (OBS). */
+export type MatchClockStatus = 'idle' | 'running' | 'paused';
+
 export interface Match {
   id: string;
   stage: MatchStage;
@@ -57,22 +60,30 @@ export interface Match {
   homeLineup: string[];
   awayLineup: string[];
   events: MatchEvent[];
+  clockStatus: MatchClockStatus;
+  /** ISO del último "reanudar"; sólo tiene sentido mientras `clockStatus === 'running'`. */
+  clockStartedAt?: string;
+  /** Milisegundos acumulados de los tramos ya corridos (sin contar el tramo en curso). */
+  clockElapsedMs: number;
   createdAt: string;
   updatedAt: string;
 }
 
-export type MatchInput = Omit<Match, 'id' | 'events' | 'createdAt' | 'updatedAt'>;
+export type MatchInput = Omit<
+  Match,
+  'id' | 'events' | 'clockStatus' | 'clockStartedAt' | 'clockElapsedMs' | 'createdAt' | 'updatedAt'
+>;
 
-export interface Award {
-  id: string;
-  title: string;
-  winnerPlayerId?: string;
-  winnerName?: string;
-  note?: string;
-  createdAt: string;
+/** Milisegundos transcurridos del cronómetro del partido a un instante dado (por defecto, ahora). */
+export function matchClockMs(
+  match: Pick<Match, 'clockStatus' | 'clockStartedAt' | 'clockElapsedMs'>,
+  now: number = Date.now(),
+): number {
+  if (match.clockStatus === 'running' && match.clockStartedAt) {
+    return match.clockElapsedMs + Math.max(0, now - new Date(match.clockStartedAt).getTime());
+  }
+  return match.clockElapsedMs;
 }
-
-export type AwardInput = Omit<Award, 'id' | 'createdAt'>;
 
 export type TournamentStatus = 'preparacion' | 'en_curso' | 'finalizado';
 

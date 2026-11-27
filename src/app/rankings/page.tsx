@@ -1,11 +1,8 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { Icon } from '../../components/common/Icon';
-import { Button } from '../../components/common/Button';
+import { useEffect } from 'react';
 import { Card, CardTitle } from '../../components/common/Card';
 import { TeamBadge } from '../../components/common/TeamBadge';
-import { useAwardsStore } from '../../store/useAwardsStore';
 import { useMatchesStore } from '../../store/useMatchesStore';
 import { usePlayersStore } from '../../store/usePlayersStore';
 import { useTeamsStore } from '../../store/useTeamsStore';
@@ -24,12 +21,6 @@ export default function RankingsPage() {
   const loadPlayers = usePlayersStore((s) => s.load);
   const playersLoaded = usePlayersStore((s) => s.loaded);
 
-  const awards = useAwardsStore((s) => s.awards);
-  const loadAwards = useAwardsStore((s) => s.load);
-  const awardsLoaded = useAwardsStore((s) => s.loaded);
-  const addAward = useAwardsStore((s) => s.addAward);
-  const deleteAward = useAwardsStore((s) => s.deleteAward);
-
   useEffect(() => {
     if (!matchesLoaded) void loadMatches();
   }, [matchesLoaded, loadMatches]);
@@ -39,9 +30,6 @@ export default function RankingsPage() {
   useEffect(() => {
     if (!playersLoaded) void loadPlayers();
   }, [playersLoaded, loadPlayers]);
-  useEffect(() => {
-    if (!awardsLoaded) void loadAwards();
-  }, [awardsLoaded, loadAwards]);
 
   const scorers = topScorers(matches);
   const cards = cardTally(matches);
@@ -56,19 +44,6 @@ export default function RankingsPage() {
     return team(id)?.name ?? '—';
   }
 
-  const [title, setTitle] = useState('');
-  const [winnerName, setWinnerName] = useState('');
-  const [note, setNote] = useState('');
-
-  async function handleAddAward(e: React.FormEvent) {
-    e.preventDefault();
-    if (!title.trim()) return;
-    await addAward({ title: title.trim(), winnerName: winnerName.trim() || undefined, note: note.trim() || undefined });
-    setTitle('');
-    setWinnerName('');
-    setNote('');
-  }
-
   return (
     <div className="space-y-6">
       <div>
@@ -81,7 +56,7 @@ export default function RankingsPage() {
           <div className="p-5 pb-0">
             <CardTitle>Goleadores</CardTitle>
           </div>
-          <div className="mt-3 divide-y divide-white/10">
+          <div className="mt-3 divide-y divide-outline-variant">
             {scorers.length === 0 && <p className="px-5 py-6 text-sm text-on-surface-variant">Todavía no hay goles cargados.</p>}
             {scorers.map((s, i) => {
               const t = team(s.teamId);
@@ -108,7 +83,7 @@ export default function RankingsPage() {
           <div className="p-5 pb-0">
             <CardTitle>Sanciones</CardTitle>
           </div>
-          <div className="mt-3 divide-y divide-white/10">
+          <div className="mt-3 divide-y divide-outline-variant">
             {cards.length === 0 && <p className="px-5 py-6 text-sm text-on-surface-variant">Todavía no hay tarjetas cargadas.</p>}
             {cards.map((c) => {
               const t = team(c.teamId);
@@ -125,9 +100,9 @@ export default function RankingsPage() {
                   </div>
                   <div className="flex shrink-0 gap-2 text-sm">
                     {c.yellow > 0 && (
-                      <span className="rounded bg-gray-100 px-2 py-0.5 font-semibold text-gray-700">🟨 {c.yellow}</span>
+                      <span className="rounded bg-surface-container-highest px-2 py-0.5 font-semibold text-on-surface-variant">🟨 {c.yellow}</span>
                     )}
-                    {c.red > 0 && <span className="rounded bg-red-50 px-2 py-0.5 font-semibold text-red-700">🟥 {c.red}</span>}
+                    {c.red > 0 && <span className="rounded bg-secondary-container/15 px-2 py-0.5 font-semibold text-secondary-container">🟥 {c.red}</span>}
                   </div>
                 </div>
               );
@@ -135,61 +110,6 @@ export default function RankingsPage() {
           </div>
         </Card>
       </div>
-
-      <Card>
-        <CardTitle>Premios</CardTitle>
-        <p className="mt-1 text-sm text-on-surface-variant">MVP y cualquier otro reconocimiento del torneo.</p>
-
-        <form onSubmit={handleAddAward} className="mt-4 grid gap-3 sm:grid-cols-[1fr_1fr_1fr_auto]">
-          <input
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            placeholder="Título (ej. MVP del torneo)"
-            required
-            className="rounded-lg border border-white/15 bg-surface-container-low px-3 py-2 text-sm text-on-surface outline-none focus:border-primary-container"
-          />
-          <input
-            value={winnerName}
-            onChange={(e) => setWinnerName(e.target.value)}
-            placeholder="Ganador"
-            className="rounded-lg border border-white/15 bg-surface-container-low px-3 py-2 text-sm text-on-surface outline-none focus:border-primary-container"
-          />
-          <input
-            value={note}
-            onChange={(e) => setNote(e.target.value)}
-            placeholder="Nota (opcional)"
-            className="rounded-lg border border-white/15 bg-surface-container-low px-3 py-2 text-sm text-on-surface outline-none focus:border-primary-container"
-          />
-          <Button type="submit">
-            <Icon name="add" /> Agregar
-          </Button>
-        </form>
-
-        <div className="mt-4 space-y-2">
-          {awards.length === 0 && <p className="text-sm text-on-surface-variant">Todavía no cargaste ningún premio.</p>}
-          {awards.map((a) => (
-            <div key={a.id} className="flex items-center justify-between gap-3 rounded-lg border border-white/10 px-3 py-2">
-              <div className="flex items-center gap-2">
-                <Icon name="military_tech" className="text-tertiary-fixed-dim" />
-                <div>
-                  <p className="text-sm font-medium text-on-surface">
-                    {a.title}
-                    {a.winnerName ? ` — ${a.winnerName}` : ''}
-                  </p>
-                  {a.note && <p className="text-xs text-on-surface-variant">{a.note}</p>}
-                </div>
-              </div>
-              <button
-                onClick={() => void deleteAward(a.id)}
-                className="rounded-lg p-2 text-red-400 hover:bg-red-50 hover:text-red-600"
-                aria-label="Eliminar"
-              >
-                <Icon name="delete" />
-              </button>
-            </div>
-          ))}
-        </div>
-      </Card>
     </div>
   );
 }

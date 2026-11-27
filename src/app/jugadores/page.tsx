@@ -82,10 +82,10 @@ export default function JugadoresPage() {
       </div>
 
       {importFeedback && (
-        <Card className="border-green-200">
-          <p className="text-sm font-medium text-green-700">Se importaron {importFeedback.added} jugadores.</p>
+        <Card className="border-primary-container/30">
+          <p className="text-sm font-medium text-primary-fixed-dim">Se importaron {importFeedback.added} jugadores.</p>
           {importFeedback.errors.length > 0 && (
-            <ul className="mt-2 max-h-32 space-y-1 overflow-y-auto text-xs text-red-700">
+            <ul className="mt-2 max-h-32 space-y-1 overflow-y-auto text-xs text-secondary-container">
               {importFeedback.errors.map((err, i) => (
                 <li key={i}>· {err}</li>
               ))}
@@ -104,13 +104,13 @@ export default function JugadoresPage() {
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Buscar por nombre…"
-            className="w-full rounded-lg border border-white/15 bg-surface-container-low py-2 pl-9 pr-3 text-sm text-on-surface outline-none focus:border-primary-container"
+            className="w-full rounded-lg border border-outline-variant bg-surface-container-low py-2 pl-9 pr-3 text-sm text-on-surface outline-none focus:border-primary-container"
           />
         </div>
         <select
           value={positionFilter}
           onChange={(e) => setPositionFilter(e.target.value as Position | 'all')}
-          className="rounded-lg border border-white/15 bg-surface-container-low px-3 py-2 text-sm text-on-surface outline-none focus:border-primary-container"
+          className="rounded-lg border border-outline-variant bg-surface-container-low px-3 py-2 text-sm text-on-surface outline-none focus:border-primary-container"
         >
           <option value="all">Todas las posiciones</option>
           {POSITIONS.map((p) => (
@@ -135,7 +135,7 @@ export default function JugadoresPage() {
                 {tierPlayers.map((p) => (
                   <div
                     key={p.id}
-                    className="group relative flex flex-col items-center gap-2 rounded-xl border border-white/10 bg-surface-container-low p-3 text-center"
+                    className="group relative flex flex-col items-center gap-2 rounded-xl border border-outline-variant bg-surface-container-lowest p-3 text-center"
                   >
                     <div className="absolute right-1.5 top-1.5 flex gap-0.5 opacity-0 transition group-hover:opacity-100">
                       <button
@@ -152,13 +152,13 @@ export default function JugadoresPage() {
                         onClick={() => {
                           if (confirm(`¿Eliminar a ${p.fullName}?`)) void deletePlayer(p.id);
                         }}
-                        className="rounded p-1 text-red-400 hover:bg-red-50"
+                        className="rounded p-1 text-secondary-container hover:bg-secondary-container/10"
                         aria-label="Eliminar"
                       >
                         <Icon name="delete" className="text-xs" />
                       </button>
                     </div>
-                    <div className="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-full border border-white/10 bg-surface-container text-on-surface-variant">
+                    <div className="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-full border border-outline-variant bg-surface-container text-on-surface-variant">
                       {p.photoUrl ? (
                         <img src={p.photoUrl} alt="" className="h-full w-full object-cover" />
                       ) : (
@@ -168,7 +168,7 @@ export default function JugadoresPage() {
                     <p className="w-full truncate text-sm font-medium text-on-surface">{p.fullName}</p>
                     <PositionBadge position={p.primaryPosition} />
                     {!p.available && (
-                      <span className="rounded-full bg-red-50 px-2 py-0.5 text-[10px] font-medium text-red-600">
+                      <span className="rounded-full bg-secondary-container/10 px-2 py-0.5 text-[10px] font-medium text-secondary-container">
                         No disponible
                       </span>
                     )}

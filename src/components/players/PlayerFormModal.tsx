@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { Icon } from '../common/Icon';
 import { Button } from '../common/Button';
 import { Modal } from '../common/Modal';
+import { DogLoader } from '../common/DogLoader';
 import { isSupabaseConfigured } from '../../lib/supabase/client';
 import { uploadPlayerPhoto } from '../../lib/supabase/storage';
 import {
@@ -107,9 +108,9 @@ export function PlayerFormModal({ open, onClose, onSubmit, initial }: Props) {
     <Modal open={open} onClose={onClose} title={initial ? 'Editar jugador' : 'Nuevo jugador'}>
       <form onSubmit={handleSubmit} className="space-y-4">
         <div className="flex items-center gap-4">
-          <div className="flex h-16 w-16 items-center justify-center overflow-hidden rounded-full border border-white/15 bg-surface-container text-3xl text-on-surface-variant">
+          <div className="flex h-16 w-16 items-center justify-center overflow-hidden rounded-full border border-outline-variant bg-surface-container text-3xl text-on-surface-variant">
             {uploadingPhoto ? (
-              <Icon name="progress_activity" className="animate-spin text-xl text-primary-fixed-dim" />
+              <DogLoader size={28} />
             ) : form.photoUrl ? (
               <img src={form.photoUrl} alt="" className="h-full w-full object-cover" />
             ) : (
@@ -125,7 +126,7 @@ export function PlayerFormModal({ open, onClose, onSubmit, initial }: Props) {
               disabled={uploadingPhoto}
               className="text-xs text-on-surface-variant"
             />
-            {photoError && <p className="mt-1 text-xs text-red-600">{photoError}</p>}
+            {photoError && <p className="mt-1 text-xs text-secondary-container">{photoError}</p>}
           </label>
         </div>
 
@@ -135,7 +136,7 @@ export function PlayerFormModal({ open, onClose, onSubmit, initial }: Props) {
             required
             value={form.fullName}
             onChange={(e) => setForm((f) => ({ ...f, fullName: e.target.value }))}
-            className="w-full rounded-lg border border-white/15 bg-surface-container-low px-3 py-2 text-on-surface outline-none focus:border-primary-container"
+            className="w-full rounded-lg border border-outline-variant bg-surface-container-low px-3 py-2 text-on-surface outline-none focus:border-primary-container"
           />
         </div>
 
@@ -144,7 +145,7 @@ export function PlayerFormModal({ open, onClose, onSubmit, initial }: Props) {
           <select
             value={form.primaryPosition}
             onChange={(e) => setForm((f) => ({ ...f, primaryPosition: e.target.value as Position }))}
-            className="w-full rounded-lg border border-white/15 bg-surface-container-low px-3 py-2 text-on-surface outline-none focus:border-primary-container"
+            className="w-full rounded-lg border border-outline-variant bg-surface-container-low px-3 py-2 text-on-surface outline-none focus:border-primary-container"
           >
             {POSITIONS.map((p) => (
               <option key={p} value={p}>
@@ -159,7 +160,7 @@ export function PlayerFormModal({ open, onClose, onSubmit, initial }: Props) {
           <select
             value={form.level}
             onChange={(e) => setForm((f) => ({ ...f, level: Number(e.target.value) as SkillLevel }))}
-            className="w-full rounded-lg border border-white/15 bg-surface-container-low px-3 py-2 text-sm text-on-surface outline-none focus:border-primary-container"
+            className="w-full rounded-lg border border-outline-variant bg-surface-container-low px-3 py-2 text-sm text-on-surface outline-none focus:border-primary-container"
           >
             {SKILL_LEVELS.map((lvl) => (
               <option key={lvl} value={lvl}>
@@ -179,8 +180,8 @@ export function PlayerFormModal({ open, onClose, onSubmit, initial }: Props) {
                 onClick={() => toggleSecondary(p)}
                 className={`rounded-full border px-3 py-1 text-xs font-medium transition ${
                   form.secondaryPositions.includes(p)
-                    ? 'border-primary-container bg-green-50 text-primary-fixed-dim'
-                    : 'border-white/15 text-on-surface-variant hover:bg-background'
+                    ? 'border-primary-container bg-primary-container/10 text-primary-fixed-dim'
+                    : 'border-outline-variant text-on-surface-variant hover:bg-background'
                 }`}
               >
                 {POSITION_LABELS[p]}
@@ -205,7 +206,7 @@ export function PlayerFormModal({ open, onClose, onSubmit, initial }: Props) {
             value={form.notes}
             onChange={(e) => setForm((f) => ({ ...f, notes: e.target.value }))}
             rows={2}
-            className="w-full rounded-lg border border-white/15 bg-surface-container-low px-3 py-2 text-on-surface outline-none focus:border-primary-container"
+            className="w-full rounded-lg border border-outline-variant bg-surface-container-low px-3 py-2 text-on-surface outline-none focus:border-primary-container"
           />
         </div>
 

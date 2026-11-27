@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { Icon } from '../../components/common/Icon';
 import { Button } from '../../components/common/Button';
 import { Card, CardTitle } from '../../components/common/Card';
+import { DogLoader } from '../../components/common/DogLoader';
 import { isSupabaseConfigured } from '../../lib/supabase/client';
 import { uploadTournamentBanner } from '../../lib/supabase/storage';
 import { useTournamentInfoStore } from '../../store/useTournamentInfoStore';
@@ -69,9 +70,9 @@ export default function ConfiguracionPage() {
         <p className="mt-1 text-sm text-on-surface-variant">Se muestra en el Inicio: nombre, período, estado, organizador y banner.</p>
 
         <div className="mt-4 flex items-center gap-4">
-          <div className="flex h-16 w-28 shrink-0 items-center justify-center overflow-hidden rounded-lg border border-white/15 bg-surface-container text-on-surface-variant">
+          <div className="flex h-16 w-28 shrink-0 items-center justify-center overflow-hidden rounded-lg border border-outline-variant bg-surface-container text-on-surface-variant">
             {uploadingBanner ? (
-              <Icon name="progress_activity" className="animate-spin text-xl text-primary-fixed-dim" />
+              <DogLoader size={28} />
             ) : tournamentForm.bannerUrl ? (
               <img src={tournamentForm.bannerUrl} alt="" className="h-full w-full object-cover" />
             ) : (
@@ -81,7 +82,7 @@ export default function ConfiguracionPage() {
           <label className="text-sm">
             <span className="mb-1 block text-on-surface-variant">Banner (opcional)</span>
             <input type="file" accept="image/*" onChange={handleBanner} disabled={uploadingBanner} className="text-xs text-on-surface-variant" />
-            {bannerError && <p className="mt-1 text-xs text-red-600">{bannerError}</p>}
+            {bannerError && <p className="mt-1 text-xs text-secondary-container">{bannerError}</p>}
           </label>
         </div>
 
@@ -91,7 +92,7 @@ export default function ConfiguracionPage() {
             <input
               value={tournamentForm.name}
               onChange={(e) => setTournamentForm((f) => ({ ...f, name: e.target.value }))}
-              className="w-full rounded-lg border border-white/15 bg-surface-container-low px-3 py-2 text-on-surface outline-none focus:border-primary-container"
+              className="w-full rounded-lg border border-outline-variant bg-surface-container-low px-3 py-2 text-on-surface outline-none focus:border-primary-container"
             />
           </div>
           <div>
@@ -99,7 +100,7 @@ export default function ConfiguracionPage() {
             <input
               value={tournamentForm.organizer ?? ''}
               onChange={(e) => setTournamentForm((f) => ({ ...f, organizer: e.target.value }))}
-              className="w-full rounded-lg border border-white/15 bg-surface-container-low px-3 py-2 text-on-surface outline-none focus:border-primary-container"
+              className="w-full rounded-lg border border-outline-variant bg-surface-container-low px-3 py-2 text-on-surface outline-none focus:border-primary-container"
             />
           </div>
           <div>
@@ -108,7 +109,7 @@ export default function ConfiguracionPage() {
               type="date"
               value={tournamentForm.periodStart ?? ''}
               onChange={(e) => setTournamentForm((f) => ({ ...f, periodStart: e.target.value }))}
-              className="w-full rounded-lg border border-white/15 bg-surface-container-low px-3 py-2 text-on-surface outline-none focus:border-primary-container"
+              className="w-full rounded-lg border border-outline-variant bg-surface-container-low px-3 py-2 text-on-surface outline-none focus:border-primary-container"
             />
           </div>
           <div>
@@ -117,7 +118,7 @@ export default function ConfiguracionPage() {
               type="date"
               value={tournamentForm.periodEnd ?? ''}
               onChange={(e) => setTournamentForm((f) => ({ ...f, periodEnd: e.target.value }))}
-              className="w-full rounded-lg border border-white/15 bg-surface-container-low px-3 py-2 text-on-surface outline-none focus:border-primary-container"
+              className="w-full rounded-lg border border-outline-variant bg-surface-container-low px-3 py-2 text-on-surface outline-none focus:border-primary-container"
             />
           </div>
           <div>
@@ -125,7 +126,7 @@ export default function ConfiguracionPage() {
             <select
               value={tournamentForm.status}
               onChange={(e) => setTournamentForm((f) => ({ ...f, status: e.target.value as TournamentStatus }))}
-              className="w-full rounded-lg border border-white/15 bg-surface-container-low px-3 py-2 text-on-surface outline-none focus:border-primary-container"
+              className="w-full rounded-lg border border-outline-variant bg-surface-container-low px-3 py-2 text-on-surface outline-none focus:border-primary-container"
             >
               {Object.entries(TOURNAMENT_STATUS_LABELS).map(([value, label]) => (
                 <option key={value} value={value}>

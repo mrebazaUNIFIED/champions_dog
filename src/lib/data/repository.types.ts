@@ -1,4 +1,4 @@
-import type { Award, Match, Player, TournamentInfo, TournamentTeam } from '../../types';
+import type { Match, Player, TournamentInfo, TournamentTeam } from '../../types';
 
 export interface DataRepository {
   readonly backend: 'supabase' | 'local';
@@ -13,12 +13,9 @@ export interface DataRepository {
   deleteTeam(id: string): Promise<void>;
 
   listMatches(): Promise<Match[]>;
+  getMatch(id: string): Promise<Match | null>;
   upsertMatch(match: Match): Promise<void>;
   deleteMatch(id: string): Promise<void>;
-
-  listAwards(): Promise<Award[]>;
-  upsertAward(award: Award): Promise<void>;
-  deleteAward(id: string): Promise<void>;
 
   getTournamentInfo(): Promise<TournamentInfo | null>;
   saveTournamentInfo(info: TournamentInfo): Promise<void>;

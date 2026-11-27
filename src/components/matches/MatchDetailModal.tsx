@@ -1,10 +1,11 @@
 'use client';
 
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { Icon } from '../common/Icon';
 import { Button } from '../common/Button';
 import { Modal } from '../common/Modal';
 import { TeamBadge } from '../common/TeamBadge';
+import { formatClock, useMatchClockMs } from '../../hooks/useMatchClock';
 import { usePlayersStore } from '../../store/usePlayersStore';
 import { useMatchesStore } from '../../store/useMatchesStore';
 import { useTeamsStore } from '../../store/useTeamsStore';
@@ -28,12 +29,17 @@ export function MatchDetailModal({ matchId, onClose }: Props) {
   const updateMatch = useMatchesStore((s) => s.updateMatch);
   const addEvent = useMatchesStore((s) => s.addEvent);
   const removeEvent = useMatchesStore((s) => s.removeEvent);
+  const startClock = useMatchesStore((s) => s.startClock);
+  const pauseClock = useMatchesStore((s) => s.pauseClock);
+  const resetClock = useMatchesStore((s) => s.resetClock);
   const teams = useTeamsStore((s) => s.teams);
   const players = usePlayersStore((s) => s.players);
+  const [overlayCopied, setOverlayCopied] = useState(false);
 
   const match = matches.find((m) => m.id === matchId) ?? null;
   const homeTeam = teams.find((t) => t.id === match?.homeTeamId);
   const awayTeam = teams.find((t) => t.id === match?.awayTeamId);
+  const clockMs = useMatchClockMs(match);
 
   const feed = useMemo(() => {
     if (!match) return [];
@@ -47,6 +53,20 @@ export function MatchDetailModal({ matchId, onClose }: Props) {
   if (!match || !homeTeam || !awayTeam) return null;
 
   const score = matchScore(match);
+
+  function overlayUrl() {
+    return `${window.location.origin}/overlay/${match!.id}`;
+  }
+
+  async function copyOverlayUrl() {
+    try {
+      await navigator.clipboard.writeText(overlayUrl());
+      setOverlayCopied(true);
+      setTimeout(() => setOverlayCopied(false), 2000);
+    } catch {
+      // portapapeles no disponible (ej. sin HTTPS); el botón "Abrir overlay" sigue funcionando igual.
+    }
+  }
 
   function renderRoster(team: TournamentTeam) {
     return (
@@ -63,7 +83,7 @@ export function MatchDetailModal({ matchId, onClose }: Props) {
             return (
               <div
                 key={playerId}
-                className="flex flex-wrap items-center gap-x-2 gap-y-1.5 rounded-lg border border-white/10 bg-surface-container-low px-3 py-2 text-sm"
+                className="flex flex-wrap items-center gap-x-2 gap-y-1.5 rounded-lg border border-outline-variant bg-surface-container-low px-3 py-2 text-sm"
               >
                 <span className="min-w-0 flex-1 truncate text-on-surface">{playerName(playerId)}</span>
                 <div className="flex shrink-0 items-center gap-1.5 text-xs text-on-surface-variant">
@@ -139,6 +159,45 @@ export function MatchDetailModal({ matchId, onClose }: Props) {
           </div>
         </div>
 
+        <div className="rounded-xl border border-outline-variant bg-surface-container-lowest p-4">
+          <div className="flex flex-wrap items-center justify-center gap-4 sm:justify-between">
+            <div className="flex items-center gap-3">
+              <p className="font-label text-3xl text-on-surface">{formatClock(clockMs)}</p>
+              {match.status === 'live' ? (
+                <div className="flex gap-2">
+                  {match.clockStatus === 'running' ? (
+                    <Button variant="secondary" onClick={() => void pauseClock(match.id)}>
+                      <Icon name="pause" /> Pausar
+                    </Button>
+                  ) : (
+                    <Button onClick={() => void startClock(match.id)}>
+                      <Icon name="play_arrow" /> {match.clockStatus === 'paused' ? 'Reanudar' : 'Iniciar'}
+                    </Button>
+                  )}
+                  <Button variant="ghost" onClick={() => void resetClock(match.id)}>
+                    <Icon name="restart_alt" /> Reiniciar
+                  </Button>
+                </div>
+              ) : (
+                <p className="text-xs text-on-surface-variant">Poné el partido &quot;En vivo&quot; para controlar el cronómetro.</p>
+              )}
+            </div>
+
+            <div className="flex gap-2">
+              <Button variant="secondary" onClick={() => window.open(`/overlay/${match.id}`, '_blank', 'noopener')}>
+                <Icon name="live_tv" /> Abrir overlay
+              </Button>
+              <Button variant="ghost" onClick={() => void copyOverlayUrl()}>
+                <Icon name="link" /> {overlayCopied ? 'Copiado' : 'Copiar URL'}
+              </Button>
+            </div>
+          </div>
+          <p className="mt-2 text-center text-[11px] text-on-surface-variant">
+            Agregá esa URL en OBS como Browser Source (1920×1080, sin tildar &quot;Shutdown source when not visible&quot;) para
+            transmitir marcador y tiempo en vivo.
+          </p>
+        </div>
+
         <div className="flex flex-col gap-4 sm:flex-row">
           {renderRoster(homeTeam)}
           {renderRoster(awayTeam)}
@@ -146,14 +205,14 @@ export function MatchDetailModal({ matchId, onClose }: Props) {
 
         <div>
           <p className="mb-2 text-sm font-medium text-on-surface">Jugadas del partido</p>
-          <div className="max-h-40 space-y-1 overflow-y-auto rounded-lg border border-white/10 p-2">
+          <div className="max-h-40 space-y-1 overflow-y-auto rounded-lg border border-outline-variant p-2">
             {feed.length === 0 && <p className="text-xs text-on-surface-variant">Todavía no hay jugadas.</p>}
             {feed.map((event) => (
               <div key={event.id} className="flex items-center justify-between gap-2 text-sm text-on-surface">
                 <span>{eventLabel(event, playerName(event.playerId))}</span>
                 <button
                   onClick={() => void removeEvent(match.id, event.id)}
-                  className="text-on-surface-variant hover:text-red-500"
+                  className="text-on-surface-variant hover:text-secondary-container"
                   aria-label="Quitar jugada"
                 >
                   <Icon name="close" />

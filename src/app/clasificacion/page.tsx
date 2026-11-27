@@ -3,7 +3,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Icon } from '../../components/common/Icon';
 import { MatchStatusBadge } from '../../components/common/Badges';
-import { Button } from '../../components/common/Button';
 import { Card } from '../../components/common/Card';
 import { TeamBadge } from '../../components/common/TeamBadge';
 import { AddMatchModal } from '../../components/matches/AddMatchModal';
@@ -17,6 +16,15 @@ const RESULT_COLORS: Record<'W' | 'D' | 'L', string> = {
   D: 'bg-surface-container-highest text-on-surface-variant',
   L: 'bg-secondary-container text-white',
 };
+
+function formatMatchDateTime(value?: string): string | null {
+  if (!value) return null;
+  const d = new Date(value);
+  const weekday = d.toLocaleDateString('es-AR', { weekday: 'short' });
+  const date = d.toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit' });
+  const time = d.toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' });
+  return `${weekday}, ${date} · ${time}`;
+}
 
 /** Resultado (V/E/D) de los últimos 5 partidos finalizados de un equipo, del más viejo al más nuevo. */
 function lastResults(teamId: string, matches: Match[]): Array<'W' | 'D' | 'L'> {
@@ -72,6 +80,18 @@ export default function ClasificacionPage() {
     () => matches.filter((m) => phaseFilter === 'all' || m.phase === phaseFilter),
     [matches, phaseFilter],
   );
+  const matchStats = useMemo(() => {
+    const finished = filteredMatches.filter((m) => m.status === 'finished');
+    const draws = finished.filter((m) => {
+      const s = matchScore(m);
+      return s.home === s.away;
+    }).length;
+    const goals = finished.reduce((sum, m) => {
+      const s = matchScore(m);
+      return sum + s.home + s.away;
+    }, 0);
+    return { played: finished.length, draws, goals, avg: finished.length > 0 ? goals / finished.length : 0 };
+  }, [filteredMatches]);
   const nextFechaNumber = useMemo(() => {
     const numbers = matches
       .filter((m) => m.stage === 'fecha')
@@ -102,7 +122,7 @@ export default function ClasificacionPage() {
           ) : (
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-white/10 text-left text-xs uppercase tracking-wide text-on-surface-variant">
+                <tr className="border-b border-outline-variant text-left text-xs uppercase tracking-wide text-on-surface-variant">
                   <th className="px-4 py-3">Pos</th>
                   <th className="px-4 py-3">Equipo</th>
                   <th className="px-3 py-3 text-center">PTS</th>
@@ -122,7 +142,7 @@ export default function ClasificacionPage() {
                   const t = team(row.teamId);
                   if (!t) return null;
                   return (
-                    <tr key={row.teamId} className="border-b border-white/10 last:border-0">
+                    <tr key={row.teamId} className="border-b border-outline-variant last:border-0">
                       <td className="px-4 py-3 font-semibold text-on-surface">{i + 1}</td>
                       <td className="px-4 py-3">
                         <div className="flex items-center gap-2">
@@ -166,18 +186,20 @@ export default function ClasificacionPage() {
           )}
         </Card>
 
-        <div className="panel-dark flex flex-col gap-3 p-4">
-          <div className="flex items-center justify-between">
+        <div className="flex flex-col overflow-hidden rounded-xl border border-outline-variant bg-surface-container-lowest">
+          <div className="flex items-center justify-between gap-3 bg-on-primary-container px-4 py-4">
             <p className="font-display text-lg text-white">Partidos</p>
             {phases.length > 1 && (
               <select
                 value={phaseFilter}
                 onChange={(e) => setPhaseFilter(e.target.value)}
-                className="rounded-lg border border-white/15 bg-surface-container-high px-2 py-1 text-xs text-white outline-none"
+                className="rounded-full border border-white/30 bg-transparent px-3 py-1 text-xs text-white outline-none"
               >
-                <option value="all">Todas las fases</option>
+                <option value="all" className="text-on-surface">
+                  Todas las fases
+                </option>
                 {phases.map((p) => (
-                  <option key={p} value={p}>
+                  <option key={p} value={p} className="text-on-surface">
                     {p}
                   </option>
                 ))}
@@ -185,42 +207,79 @@ export default function ClasificacionPage() {
             )}
           </div>
 
-          <div className="space-y-2">
-            {filteredMatches.length === 0 && <p className="text-sm text-white/50">Todavía no hay partidos cargados.</p>}
-            {filteredMatches.map((m) => {
-              const score = matchScore(m);
-              return (
-                <button
-                  key={m.id}
-                  onClick={() => setSelectedMatchId(m.id)}
-                  className="w-full rounded-xl border border-white/10 bg-surface-container/60 p-3 text-left transition hover:border-white/25"
-                >
-                  <div className="mb-1 flex items-center justify-between gap-2">
-                    <span className="flex min-w-0 items-center gap-1.5 text-[11px] text-white/40">
+          <div className="flex flex-col gap-4 p-4">
+            {filteredMatches.length > 0 && (
+              <div className="grid grid-cols-4 divide-x divide-outline-variant overflow-hidden rounded-lg border border-outline-variant">
+                {[
+                  { label: 'Juegos', value: matchStats.played },
+                  { label: 'Empates', value: matchStats.draws },
+                  { label: 'Goles', value: matchStats.goals },
+                  { label: 'Promedio', value: matchStats.avg.toFixed(1) },
+                ].map((stat) => (
+                  <div key={stat.label} className="flex flex-col items-center gap-0.5 py-2 text-center">
+                    <span className="font-display text-xl text-on-surface">{stat.value}</span>
+                    <span className="font-label text-[9px] uppercase text-on-surface-variant">{stat.label}</span>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            <div className="space-y-2">
+              {filteredMatches.length === 0 && <p className="text-sm text-on-surface-variant">Todavía no hay partidos cargados.</p>}
+              {filteredMatches.map((m) => {
+                const score = matchScore(m);
+                const home = team(m.homeTeamId);
+                const away = team(m.awayTeamId);
+                const when = formatMatchDateTime(m.scheduledAt);
+                return (
+                  <button
+                    key={m.id}
+                    onClick={() => setSelectedMatchId(m.id)}
+                    className="w-full rounded-xl border border-outline-variant bg-surface-container-lowest p-3 text-left transition hover:border-primary-container/40"
+                  >
+                    <div className="mb-2 flex items-center justify-center gap-1.5">
                       {m.stage === 'eliminatoria' && (
                         <span className="rounded bg-secondary-container/20 px-1 py-0.5 font-label text-[9px] text-secondary-fixed">
                           ELIM
                         </span>
                       )}
-                      <span className="truncate">{m.phase}</span>
-                    </span>
-                    <MatchStatusBadge status={m.status} />
-                  </div>
-                  <div className="flex items-center justify-between gap-2 text-sm text-white">
-                    <span className="min-w-0 flex-1 truncate">{teamName(m.homeTeamId)}</span>
-                    <span className="shrink-0 px-2 font-display text-base">
-                      {score.home} - {score.away}
-                    </span>
-                    <span className="min-w-0 flex-1 truncate text-right">{teamName(m.awayTeamId)}</span>
-                  </div>
-                </button>
-              );
-            })}
-          </div>
+                      <MatchStatusBadge status={m.status} />
+                    </div>
+                    <div className="flex items-center justify-between gap-2">
+                      <div className="flex min-w-0 flex-1 flex-col items-center gap-1 text-center">
+                        {home ? (
+                          <TeamBadge name={home.name} color={home.color} size={32} />
+                        ) : (
+                          <div className="h-8 w-8" />
+                        )}
+                        <span className="w-full truncate text-xs font-medium text-on-surface">{teamName(m.homeTeamId)}</span>
+                      </div>
+                      <span className="shrink-0 px-1 font-display text-2xl text-on-surface">
+                        {score.home} : {score.away}
+                      </span>
+                      <div className="flex min-w-0 flex-1 flex-col items-center gap-1 text-center">
+                        {away ? (
+                          <TeamBadge name={away.name} color={away.color} size={32} />
+                        ) : (
+                          <div className="h-8 w-8" />
+                        )}
+                        <span className="w-full truncate text-xs font-medium text-on-surface">{teamName(m.awayTeamId)}</span>
+                      </div>
+                    </div>
+                    {when && <p className="mt-2 text-center text-[11px] text-on-surface-variant">{when}</p>}
+                  </button>
+                );
+              })}
+            </div>
 
-          <Button onClick={() => setAddOpen(true)} disabled={teams.length < 2}>
-            <Icon name="add" /> Agregar partido
-          </Button>
+            <button
+              onClick={() => setAddOpen(true)}
+              disabled={teams.length < 2}
+              className="flex items-center justify-center gap-2 rounded-full bg-on-primary-container px-4 py-2.5 font-display text-sm uppercase tracking-wide text-white transition hover:bg-on-primary-container disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              <Icon name="add" /> Agregar partido
+            </button>
+          </div>
         </div>
       </div>
 
